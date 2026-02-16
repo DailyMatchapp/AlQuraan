@@ -372,9 +372,12 @@
                 <span style="color:var(--border)">|</span>
                 <a class="footer-link" onclick="openModal('about')">عن المنصة</a>
             </div>
-            <div class="copyright">
-                <i class="far fa-copyright"></i> 2025 أثير القرآن - جميع الحقوق محفوظة
-            </div>
+          <div class="copyright">
+    <i class="far fa-copyright"></i> 
+    <span id="current-year"></span> أثير القرآن - جميع الحقوق محفوظة
+</div>
+
+
         </div>
     </aside>
 
@@ -531,6 +534,11 @@
         </div>
     </div>
 
+    <script>
+    // هذا الكود يحصل على السنة الحالية ويضعها داخل العنصر
+    document.getElementById("current-year").textContent = new Date().getFullYear();
+</script>
+    
   <script>
     // ==========================================
     // === 1. الثوابت والبيانات الأساسية ===
