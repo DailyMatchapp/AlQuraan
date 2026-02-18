@@ -2,11 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<meta name="mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+ 
     
     <title>أثير القرآن - المصحف الشامل</title>
     <link rel="icon" type="image/png" href="https://i.ibb.co/1f5wqFdt/quran-9992287.png">
@@ -1276,33 +1273,7 @@
     });
 
     
-    
-    
-    
-    // دالة تفعيل ملء الشاشة
-function activateFullScreen() {
-    const docElm = document.documentElement;
-    if (docElm.requestFullscreen) {
-        docElm.requestFullscreen();
-    } else if (docElm.mozRequestFullScreen) { /* Firefox */
-        docElm.mozRequestFullScreen();
-    } else if (docElm.webkitRequestFullScreen) { /* Chrome, Safari and Opera */
-        docElm.webkitRequestFullScreen();
-    } else if (docElm.msRequestFullscreen) { /* IE/Edge */
-        docElm.msRequestFullscreen();
-    }
-}
-
-// مراقبة التمرير لتفعيل الخاصية
-let hasInteracted = false;
-
-window.addEventListener('scroll', function() {
-    // تفعيل ملء الشاشة عند التمرير لأكثر من 50 بكسل وللمرة الأولى فقط
-    if (!hasInteracted && window.scrollY > 50) {
-        activateFullScreen();
-        hasInteracted = true; // لمنع تكرار الطلب وإزعاج المستخدم
-    }
-}, { passive: true });
+ 
 </script>
 
   </body>
