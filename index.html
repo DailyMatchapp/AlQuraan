@@ -36,7 +36,7 @@
             background-color: var(--bg-body); 
             color: var(--text-main); 
             height: 100vh; 
-            overflow: hidden; 
+            overflow-y: auto;
             display: flex; 
             position: relative;
         }
@@ -109,7 +109,7 @@
         .copyright { color: #64748b; font-size: 0.75rem; margin-top: 10px; display: flex; align-items: center; gap: 5px; }
 
         /* --- Main Layout --- */
-        .main-container { flex: 1; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .main-container { flex: 1; position: relative; display: flex; flex-direction: column; min-height: 100vh; }
         
         /* Header */
         .top-bar { padding: 15px 40px; height: 80px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); z-index: 20; }
@@ -129,7 +129,7 @@
         .page-title p { font-size: 0.85rem; color: var(--text-muted); font-weight: 400; margin-top: 0; }
       
         /* Views */
-        .content-view { flex: 1; padding: 0 40px 120px 40px; overflow-y: auto; display: none; scroll-behavior: smooth; }
+        .content-view { flex: 1; padding: 0 40px 120px 40px; overflow-y: visible; display: none; scroll-behavior: smooth; }
         .content-view.active { display: block; animation: fadeIn 0.4s ease-out; }
         
         /* Reciter Info */
@@ -319,7 +319,17 @@
         .page-content.cover-page { padding: 0 !important; background: transparent; border: none; box-shadow: none; }
         .page-content.cover-page img { object-fit: fill; width: 100%; height: 100%; filter: none; }
         @media (max-width: 768px) {
-            .sidebar { position: absolute; right: -100%; width: 100%; }
+            .sidebar { 
+        position: fixed; 
+        right: -100%; 
+        top: 0;
+        width: 100%; 
+        height: 100vh; 
+        z-index: 9999; 
+        transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(10, 10, 10, 0.98); 
+        backdrop-filter: blur(20px);
+    }
             .sidebar.active { right: 0; }
             .player-dock { left: 10px; right: 10px; bottom: 10px; padding: 0 15px; }
             .volume-slider { display: none; }
