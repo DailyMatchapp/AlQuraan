@@ -650,9 +650,25 @@
         }
     }
 
-    function scrollToTop() { 
-        document.querySelector('.content-view.active').scrollTo({ top: 0, behavior: 'smooth' }); 
+   // مراقبة التمرير على مستوى النافذة الرئيسية
+window.onscroll = function() {
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    
+    // إذا تجاوز التمرير 300 بكسل لأسفل، يظهر الزر
+    if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+        backToTopBtn.classList.add('show');
+    } else {
+        backToTopBtn.classList.remove('show');
     }
+};
+
+// دالة الصعود للأعلى بسلاسة
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
 
     // ==========================================
     // === 5. منطق القرآن والقراء ===
