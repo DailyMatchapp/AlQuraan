@@ -86,14 +86,44 @@
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         /* --- Sidebar --- */
-        .sidebar { 
-            width: var(--sidebar-width); height: 100%; 
-            background: rgba(5, 5, 5, 0.6); /* شفافية أكبر لظهور الخلفية */
-            backdrop-filter: blur(15px); 
-            border-left: 1px solid var(--border); 
-            display: flex; flex-direction: column; 
-            z-index: 50; transition: var(--transition); 
-        }
+       /* --- التعديل للشاشات الكبيرة --- */
+.sidebar { 
+    width: var(--sidebar-width); 
+    /* تغيير الوضعية إلى fixed لضمان عدم تحركها للأعلى */
+    position: fixed; 
+    top: 0;
+    right: 0;
+    height: 100vh; 
+    background: rgba(5, 5, 5, 0.6); 
+    backdrop-filter: blur(15px); 
+    border-left: 1px solid var(--border); 
+    display: flex; 
+    flex-direction: column; 
+    z-index: 1000; /* لتبقى فوق المحتوى */
+    transition: var(--transition); 
+}
+
+/* --- تعديل الحاوية الرئيسية لترك مساحة للقائمة الثابتة --- */
+@media (min-width: 769px) {
+    .main-container {
+        /* بما أن القائمة fixed، يجب دفع المحتوى لليسار بمقدار عرض القائمة */
+        margin-right: var(--sidebar-width);
+        width: calc(100% - var(--sidebar-width));
+    }
+}
+
+/* --- تعديل الشاشات الصغيرة (الجوال) --- */
+@media (max-width: 768px) {
+    .sidebar { 
+        right: -100%; 
+        width: 100%; 
+        position: fixed; /* التأكد من أنها ثابتة هنا أيضاً */
+    }
+    .main-container {
+        margin-right: 0;
+        width: 100%;
+    }
+}
         .brand { padding: 30px; font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 10px; text-shadow: 0 0 15px var(--primary-glow); }
         .brand .logo { width: 40px; height: 40px; object-fit: cover; border-radius: 8px; margin-left: 10px; }
         .nav-links { flex: 1; padding: 0 15px; overflow-y: auto; }
@@ -635,11 +665,17 @@
         if(window.innerWidth <= 768) toggleSidebar();
     }
 
-    function toggleSidebar() {
-        const sb = document.getElementById('sidebar');
-        sb.classList.toggle('active');
-        document.getElementById('closeSidebar').style.display = sb.classList.contains('active') ? 'block' : 'none';
+   function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.classList.toggle('active');
+    
+    // اختياري: منع تمرير الصفحة عند فتح القائمة
+    if (sidebar.classList.contains('active')) {
+        document.body.style.overflow = 'hidden';
+    } else {
+        document.body.style.overflow = 'auto';
     }
+}
 
     function checkScroll(el) {
         const btn = document.getElementById('backToTopBtn');
