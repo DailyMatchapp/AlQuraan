@@ -351,7 +351,14 @@
         }
 
         .prayer-name { font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        .prayer-time { font-family: 'Cairo', sans-serif; font-size: 1.2rem; color: var(--primary); font-weight: 600; direction: ltr; }
+       .prayer-time { 
+    font-family: 'Cairo', sans-serif; 
+    font-size: 1.2rem; 
+    color: var(--primary); 
+    font-weight: 600; 
+    direction: rtl; 
+    unicode-bidi: embed;
+}
 
         @media (max-width: 768px) {
             .timer-container h1 { font-size: 2.5rem; }
