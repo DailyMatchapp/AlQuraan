@@ -1511,16 +1511,20 @@
         return `${h}:${String(m).padStart(2,'0')} ${suffix}`;
     }
 
-    function renderPrayerUI(data) {
+   function renderPrayerUI(data) {
         const timings = data.timings;
         const hijri = data.date.hijri;
         const gregorian = data.date.gregorian;
         
-        // تحديث العناصر بأمان
+        // عرض التاريخ الميلادي كما هو
         const gDate = document.getElementById('gregorianDate');
-        const hDate = document.getElementById('hijriDate');
         if(gDate) gDate.innerText = `${gregorian.weekday.en} | ${gregorian.date}`;
-        if(hDate) hDate.innerText = `${hijri.day} ${hijri.month.ar} ${hijri.year}`;
+
+        // --- التعديل هنا ---
+        // قمنا بحذف ${hijri.day} ليبقى فقط الشهر والسنة
+        const hDate = document.getElementById('hijriDate');
+        if(hDate) hDate.innerText = `${hijri.month.ar} ${hijri.year}`;
+        // ------------------
 
         const prayerKeys = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"];
         const grid = document.getElementById('prayerGrid');
@@ -1551,7 +1555,7 @@
 
         startCountdown(timings);
     }
-
+        
     function startCountdown(timings) {
         if (prayerInterval) clearInterval(prayerInterval);
         
