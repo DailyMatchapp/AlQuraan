@@ -1172,7 +1172,7 @@
             
             if(data.status === "success" && data.pages) {
                 let pages = data.pages.sort((a,b) => a.page_number - b.page_number);
-                const cover = `<div class="page-content cover-page"><img src="https://cdn.qurango.net/Sura2/files/mobile/1.jpg" alt="Cover"></div>`;
+                const cover = `<div class="page-content cover-page"><img src="https://i.ibb.co/DPjbKVm2/1f762ea15eee0b1b9c8a74501a53c197.png" alt="Cover"></div>`;
                 const pageDivs = pages.map(p => `<div class="page-content"><img src="${p.page_url}" loading="lazy" alt="${p.page_number}"></div>`).join('');
                 document.getElementById('book').innerHTML = cover + pageDivs;
 
