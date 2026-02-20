@@ -824,11 +824,15 @@
     function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
     // === Quran Logic ===
-    async function initReciters() {
+   async function initReciters() {
         try { 
             const res = await fetch(API_RECITERS); 
             const data = await res.json(); 
-            state.reciters = data.reciters; 
+            
+            // --- التعديل هنا: الترتيب الأبجدي ---
+            state.reciters = data.reciters.sort((a, b) => a.name.localeCompare(b.name, 'ar')); 
+            // -----------------------------------
+
             renderReciters(state.reciters); 
         } catch(e){ console.error(e); }
     }
