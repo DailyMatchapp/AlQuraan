@@ -412,6 +412,100 @@
             z-index: 1; /* فوق الأيقونة */
         }
       
+      
+      
+      
+      
+   /* --- تنسيقات بطاقات أسماء الله الحسنى --- */
+.asma-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    padding-top: 35px !important; /* مساحة للرقم */
+}
+
+.asma-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, var(--primary), #2dd4bf);
+    color: #000;
+    font-weight: 800;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    box-shadow: 0 0 10px var(--primary-glow);
+}
+
+.asma-name-ar {
+    font-family: 'Amiri', serif;
+    font-size: 2.4rem;
+    color: var(--primary);
+    margin: 10px 0;
+    text-shadow: 0 2px 10px rgba(94, 234, 212, 0.2);
+    line-height: 1.2;
+}
+
+.asma-meaning {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 15px;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.asma-controls {
+    margin-top: auto;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 15px;
+}
+
+.btn-asma-play {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-asma-play:hover {
+    background: var(--primary);
+    color: #000;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.btn-asma-play.playing {
+    background: var(--primary);
+    color: #000;
+    animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+    0% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(94, 234, 212, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0); }
+}
+      
     </style>
 </head>
 <body>
@@ -437,6 +531,9 @@
             <div class="nav-item" onclick="openMushafOverlay()"><i class="fas fa-book-open"></i> المصحف الشريف</div>
             <div class="nav-item" onclick="navigate('hadith')"><i class="fas fa-book-reader"></i> الحديث الشريف</div>
             <div class="nav-item" onclick="navigate('prayer')"><i class="fas fa-mosque"></i> مواقيت الصلاة</div>
+         <div class="nav-item" onclick="navigate('asma')">
+    <i class="fas fa-star-and-crescent"></i> أسماء الله الحسنى
+</div>
         </nav>
         
         <div class="sidebar-footer">
@@ -542,6 +639,19 @@
                 <!-- سيتم توليد البطاقات هنا بالجافاسكربت -->
             </div>
         </div>
+      
+      
+      
+      
+    <!-- واجهة أسماء الله الحسنى -->
+<div id="asmaView" class="content-view" onscroll="checkScroll(this)">
+    <div id="asmaGrid" class="grid-layout">
+        <!-- سيتم ملء البطاقات هنا تلقائياً -->
+        <div style="text-align: center; grid-column: 1/-1; margin-top: 50px;">
+            <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i>
+        </div>
+    </div>
+</div>
       
         <div class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">
             <i class="fas fa-arrow-up"></i>
@@ -795,6 +905,12 @@
                      }
                 }
             }
+          
+           // --- الإضافة الجديدة هنا ---
+        else if(view === 'asma') {
+            initAsma(); // استدعاء دالة التهيئة
+        }
+          
             state.currentView = view;
         }
         if(window.innerWidth <= 768) toggleSidebar();
@@ -1609,6 +1725,115 @@
         updateTimer();
         prayerInterval = setInterval(updateTimer, 1000);
     }
+      
+      
+      
+      
+   // ==========================================
+//  منطق أسماء الله الحسنى (Islamic API)
+// ==========================================
+
+const ASMA_API_KEY = 'KVYgvSoKiJ8wabmIJY9d2zHHfPEvVqKgM19Kq3sAmZN8DvwW';
+// نطلب اللغة العربية لكي يأتي "المعنى" بالعربية
+const ASMA_URL = `https://islamicapi.com/api/v1/asma-ul-husna/?language=ar&api_key=${ASMA_API_KEY}`;
+let currentAsmaAudio = null; // لتشغيل صوت واحد في كل مرة
+
+async function initAsma() {
+    // تحديث ترويسة الصفحة
+    const header = document.getElementById('pageHeader');
+    header.innerHTML = '<h2>أسماء الله الحسنى</h2><p>وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>';
+    
+    // إذا كانت البيانات محملة مسبقاً لا تقم بالتحميل مجدداً
+    if (state.asmaData && state.asmaData.length > 0) return;
+
+    const grid = document.getElementById('asmaGrid');
+    grid.innerHTML = '<div style="text-align: center; grid-column: 1/-1; margin-top: 50px;"><i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i></div>';
+
+    try {
+        const res = await fetch(ASMA_URL);
+        const data = await res.json();
+
+        if (data.code === 200 && data.data && data.data.names) {
+            state.asmaData = data.data.names;
+            renderAsmaGrid(state.asmaData);
+        } else {
+            throw new Error(data.message || "فشل التحميل");
+        }
+    } catch (e) {
+        console.error(e);
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; color:#ef4444;">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i><br><br>
+                            حدث خطأ في جلب الأسماء. يرجى التحقق من اتصال الإنترنت.<br>
+                            <small>${e.message}</small>
+                          </div>`;
+    }
+}
+
+function renderAsmaGrid(names) {
+    const grid = document.getElementById('asmaGrid');
+    grid.innerHTML = '';
+
+    names.forEach(item => {
+        // إنشاء رابط الصوت الكامل (API يعيد رابط نسبي)
+        // ملاحظة: الـ API يعيد روابط بصيغة /audio/...
+        const audioUrl = item.audio.startsWith('http') ? item.audio : `https://islamicapi.com${item.audio}`;
+        
+        const card = document.createElement('div');
+        card.className = 'card asma-card';
+        card.innerHTML = `
+            <div class="asma-badge">${item.number}</div>
+            <h3 class="asma-name-ar">${item.name}</h3>
+            <p class="asma-meaning">${item.meaning}</p>
+            
+            <div class="asma-controls">
+                <button class="btn-asma-play" onclick="playAsmaName(this, '${audioUrl}')" title="استماع">
+                    <i class="fas fa-volume-up"></i>
+                </button>
+            </div>
+        `;
+        
+        // عند النقر على البطاقة (وليس الزر) يمكن نسخ الاسم أو عرضه بشكل أكبر (اختياري)
+        grid.appendChild(card);
+    });
+}
+
+function playAsmaName(btn, url) {
+    // إيقاف الصوت السابق إذا كان يعمل
+    if (currentAsmaAudio) {
+        currentAsmaAudio.pause();
+        currentAsmaAudio.currentTime = 0;
+        // إعادة أيقونة الزر السابق لطبيعتها
+        const prevBtn = document.querySelector('.btn-asma-play.playing');
+        if (prevBtn) {
+            prevBtn.classList.remove('playing');
+            prevBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        }
+    }
+
+    // إذا ضغطنا على نفس الزر وهو يعمل، نتوقف فقط
+    if (btn.classList.contains('playing')) {
+        return; 
+    }
+
+    // تشغيل الصوت الجديد
+    const audio = new Audio(url);
+    currentAsmaAudio = audio;
+
+    btn.classList.add('playing');
+    btn.innerHTML = '<i class="fas fa-pause"></i>';
+
+    audio.play().catch(err => {
+        console.error("Audio Playback Error:", err);
+        btn.classList.remove('playing');
+        btn.innerHTML = '<i class="fas fa-exclamation"></i>';
+    });
+
+    audio.onended = () => {
+        btn.classList.remove('playing');
+        btn.innerHTML = '<i class="fas fa-volume-up"></i>';
+        currentAsmaAudio = null;
+    };
+}
     </script>
 </body>
 </html>
