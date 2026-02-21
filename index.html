@@ -684,7 +684,9 @@
         <div class="volume-area">
             <input type="range" class="volume-slider" style="direction: ltr;" min="0" max="1" step="0.1" value="1" oninput="setVolume(this.value)">
             <button class="btn-ctrl" style="direction: ltr;" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up"></i></button>
-            <button class="btn-ctrl" onclick="openMushafOverlay()" title="المصحف" style="margin-right:10px"><i class="fas fa-book-open"></i></button>
+            <button class="btn-ctrl" onclick="openSyncMushaf()" title="فتح المصحف على التلاوة الحالية" style="margin-right:10px">
+    <i class="fas fa-book-open"></i>
+</button>
         </div>
     </div>
     
@@ -878,44 +880,68 @@
     }
 
     // === Navigation ===
-   function navigate(view) {
-        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-        if(event && event.currentTarget) event.currentTarget.classList.add('active');
+  function navigate(view) {
+    // 1. إزالة التفعيل من عناصر القائمة الجانبية
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    if(event && event.currentTarget) event.currentTarget.classList.add('active');
 
-        document.querySelectorAll('.content-view').forEach(el => el.classList.remove('active'));
-        document.getElementById('mushafOverlay').classList.remove('active'); 
+    // 2. إخفاء جميع الواجهات
+    document.querySelectorAll('.content-view').forEach(el => el.classList.remove('active'));
+    document.getElementById('mushafOverlay').classList.remove('active'); 
 
-        if (view !== 'mushaf') {
-            document.getElementById(view + 'View').classList.add('active');
-            const h = document.getElementById('pageHeader');
-            
-            if(view === 'quran') h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
-            else if(view === 'hadith') h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
-            else if(view === 'radio') {
-                h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر على مدار الساعة</p>';
-                initRadios();
-            }
-            else if(view === 'prayer') {
-                h.innerHTML = '<h2>مواقيت الصلاة</h2><p>إن الصلاة كانت على المؤمنين كتاباً موقوتاً</p>';
-                // إذا لم يتم تحميل المواقيت مسبقاً، نتحقق مجدداً
-                if(document.getElementById('prayerGrid').children.length === 0) {
-                     const savedCountry = localStorage.getItem('atheer_country');
-                     if(savedCountry) {
-                        // لا داعي لإعادة النداء إذا تم النداء في init، ولكن للاحتياط
-                     }
-                }
-            }
-          
-           // --- الإضافة الجديدة هنا ---
-        else if(view === 'asma') {
-            initAsma(); // استدعاء دالة التهيئة
-        }
-          
-            state.currentView = view;
-        }
-        if(window.innerWidth <= 768) toggleSidebar();
+    // 3. منطق إخفاء/إظهار أيقونة البحث (الجزء الجديد)
+    const searchWrapper = document.getElementById('searchWrapper');
+    // القائمة التي نريد إخفاء البحث فيها
+    const noSearchViews = ['prayer', 'asma']; 
+
+    if (noSearchViews.includes(view)) {
+        searchWrapper.style.display = 'none'; // إخفاء
+        
+        // إغلاق شريط البحث إذا كان مفتوحاً وتنظيف النص
+        searchWrapper.classList.remove('expanded');
+        document.querySelector('.top-bar').classList.remove('search-active');
+        document.querySelector('.search-toggle-btn i').className = 'fas fa-search';
+        clearSearch();
+    } else {
+        searchWrapper.style.display = 'flex'; // إظهار (في القرآن، الحديث، الإذاعة)
     }
 
+    // 4. تفعيل الواجهة المطلوبة وتحديث العناوين
+    if (view !== 'mushaf') {
+        document.getElementById(view + 'View').classList.add('active');
+        const h = document.getElementById('pageHeader');
+        
+        if(view === 'quran') {
+            h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
+        }
+        else if(view === 'hadith') {
+            h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
+        }
+        else if(view === 'radio') {
+            h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر على مدار الساعة</p>';
+            initRadios();
+        }
+        else if(view === 'prayer') {
+            h.innerHTML = '<h2>مواقيت الصلاة</h2><p>إن الصلاة كانت على المؤمنين كتاباً موقوتاً</p>';
+            // منطق الصلاة (تأكد من وجود الكود الخاص بك هنا)
+            // if(document.getElementById('prayerGrid').children.length === 0) ...
+        }
+        else if(view === 'asma') {
+            // دالة أسماء الله الحسنى التي أضفناها سابقاً
+            initAsma(); 
+        }
+       
+        
+        state.currentView = view;
+    }
+    
+    // إغلاق القائمة في الجوال
+    if(window.innerWidth <= 768) toggleSidebar();
+}
+      
+      
+      
+      
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         sidebar.classList.toggle('active');
@@ -1325,8 +1351,15 @@
         }
     }
 
-    async function openMushafOverlay() {
-        if(window.innerWidth <= 768) toggleSidebar();
+   async function openMushafOverlay() {
+        // --- بداية التصحيح ---
+        // نتحقق أولاً: هل القائمة الجانبية مفتوحة؟ (تحتوي على كلاس active)
+        const sidebar = document.getElementById('sidebar');
+        if(window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+            toggleSidebar(); // نغلقها فقط إذا كانت مفتوحة
+        }
+        // --- نهاية التصحيح ---
+
         document.getElementById('mushafOverlay').classList.add('active');
         if (!state.mushafLoaded) { await loadMushafBook(); state.mushafLoaded = true; }
     }
@@ -1833,6 +1866,42 @@ function playAsmaName(btn, url) {
         btn.innerHTML = '<i class="fas fa-volume-up"></i>';
         currentAsmaAudio = null;
     };
+}
+      
+      
+      
+      
+      
+      function openSyncMushaf() {
+    // 1. فتح واجهة المصحف
+    openMushafOverlay();
+
+    // 2. التحقق مما إذا كان هناك تلاوة تعمل حالياً
+    // state.playlist يحتوي على أرقام السور، و state.currentIndex هو الترتيب الحالي
+    if (state.playlist && state.playlist.length > 0 && state.currentIndex !== -1) {
+        
+        // الحصول على رقم السورة (مثلاً 18 للكهف)
+        const currentSurahId = state.playlist[state.currentIndex];
+        
+        // البحث عن رقم صفحة بداية السورة من مصفوفة البيانات surahsData
+        // المصفوفة تبدأ من 0 لذلك نطرح 1 من رقم السورة
+        const surahInfo = surahsData[currentSurahId - 1];
+
+        if (surahInfo) {
+            // ننتظر قليلاً حتى يفتح المصحف ثم نقلب الصفحة
+            setTimeout(() => {
+                if (state.pageFlipInstance) {
+                    state.pageFlipInstance.flip(surahInfo.p); // الذهاب لصفحة السورة
+                    
+                    // تحديث القوائم المنسدلة (الجزء، السورة) لتطابق الصفحة
+                    syncDropdowns(surahInfo.p);
+                    
+                    // عرض رسالة صغيرة للمستخدم
+                    showMushafToast(`تم الانتقال لسورة ${surahInfo.n}`);
+                }
+            }, 500); // تأخير نصف ثانية لضمان تحميل الكتاب
+        }
+    }
 }
     </script>
 </body>
