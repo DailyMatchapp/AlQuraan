@@ -1240,28 +1240,46 @@ function navigate(view) {
     }
 
     function handleSearchInput() {
-        const val = document.getElementById('searchInput').value.toLowerCase();
-        document.getElementById('clearSearchBtn').style.display = val ? 'block' : 'none';
-        if (state.currentView === 'reciters') {
-            const filtered = state.reciters.filter(r => r.name.includes(val));
-            renderReciters(filtered); updateNoResultsMsg('quranGrid', filtered.length === 0);
-        } else if (state.currentView === 'surahs') {
-            let hasVisible = false;
-            document.querySelectorAll('#quranGrid .card').forEach(c => {
-                if (c.innerText.includes(val)) { c.style.display = 'block'; hasVisible = true; } else { c.style.display = 'none'; }
-            });
-            updateNoResultsMsg('quranGrid', !hasVisible);
-        } else if (state.currentView === 'radio') {
-            const filtered = state.radios.filter(r => r.name.includes(val));
-            renderRadios(filtered); updateNoResultsMsg('radioGrid', filtered.length === 0);
-        } else if (state.currentView === 'hadithList') {
-            let hasVisible = false;
-            document.querySelectorAll('#hadithGrid .card').forEach(c => {
-                if (c.innerText.includes(val)) { c.style.display = 'block'; hasVisible = true; } else { c.style.display = 'none'; }
-            });
-            updateNoResultsMsg('hadithGrid', !hasVisible);
-        }
+    const val = document.getElementById('searchInput').value.toLowerCase();
+    document.getElementById('clearSearchBtn').style.display = val ? 'block' : 'none';
+
+    // --- بداية التصحيح: إضافة (|| state.currentView === 'quran') ---
+    if (state.currentView === 'reciters' || state.currentView === 'quran') {
+        const filtered = state.reciters.filter(r => r.name.includes(val));
+        renderReciters(filtered); 
+        updateNoResultsMsg('quranGrid', filtered.length === 0);
+    } 
+    // --- نهاية التصحيح ---
+    
+    else if (state.currentView === 'surahs') {
+        let hasVisible = false;
+        document.querySelectorAll('#quranGrid .card').forEach(c => {
+            // البحث داخل نص البطاقة (اسم السورة)
+            if (c.innerText.includes(val)) { 
+                c.style.display = 'block'; 
+                hasVisible = true; 
+            } else { 
+                c.style.display = 'none'; 
+            }
+        });
+        updateNoResultsMsg('quranGrid', !hasVisible);
+    } else if (state.currentView === 'radio') {
+        const filtered = state.radios.filter(r => r.name.includes(val));
+        renderRadios(filtered); 
+        updateNoResultsMsg('radioGrid', filtered.length === 0);
+    } else if (state.currentView === 'hadithList') {
+        let hasVisible = false;
+        document.querySelectorAll('#hadithGrid .card').forEach(c => {
+            if (c.innerText.includes(val)) { 
+                c.style.display = 'block'; 
+                hasVisible = true; 
+            } else { 
+                c.style.display = 'none'; 
+            }
+        });
+        updateNoResultsMsg('hadithGrid', !hasVisible);
     }
+}
      
     function clearSearch() { document.getElementById('searchInput').value = ''; handleSearchInput(); }
 
@@ -2056,8 +2074,23 @@ function switchFavTab(tab) {
     renderFavoritesGrid();
 }
 
+      
+      
 function renderFavoritesGrid() {
     const grid = document.getElementById('favoritesGrid');
+    
+    // --- بداية التعديل: تغيير تخطيط الشبكة بناءً على التبويب ---
+    if (currentFavTab === 'hadith') {
+        // في حالة الأحاديث: عمود واحد فقط (حديث فوق حديث) لجميع الشاشات
+        grid.style.gridTemplateColumns = '1fr';
+    } else {
+        // في حالة القرآن والإذاعات: شبكة عادية (بطاقات بجانب بعض)
+        grid.style.removeProperty('grid-template-columns');
+        // أو للتأكد نقوم بإعادة تعيينها كما في CSS الأصلي
+        grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
+    }
+    // --- نهاية التعديل ---
+
     grid.innerHTML = '';
     let list = [];
     
@@ -2075,7 +2108,11 @@ function renderFavoritesGrid() {
         d.className = 'card';
         
         // زر الحذف (قلب مفعل دائماً)
-        const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "${currentFavTab === "quran" ? "reciters" : currentFavTab === "radio" ? "radios" : "hadiths"}", ${JSON.stringify(item)})'><i class="fas fa-heart"></i></div>`;
+        const itemData = currentFavTab === 'hadith' ? 
+            {number: item.number, text: item.text} : // إصلاح هيكلة بيانات الحديث
+            item;
+
+        const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "${currentFavTab === "quran" ? "reciters" : currentFavTab === "radio" ? "radios" : "hadiths"}", ${JSON.stringify(itemData)})'><i class="fas fa-heart"></i></div>`;
 
         if (currentFavTab === 'quran') {
             d.innerHTML = `${heartBtn}<h3>${item.name}</h3><p>${item.moshaf[0].name}</p>`;
@@ -2084,19 +2121,23 @@ function renderFavoritesGrid() {
         else if (currentFavTab === 'radio') {
             d.innerHTML = `${heartBtn}<div style="display:flex; justify-content:space-between;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${item.name}</h3>`;
             d.onclick = () => {
-                // البحث عن الاندكس لتشغيل الراديو بشكل صحيح
-                // ملاحظة: لتشغيل الراديو من المفضلة، سنقوم بتحميله مباشرة
                 playRadioDirect(item);
             };
         }
         else if (currentFavTab === 'hadith') {
             d.style.cursor = 'default';
-            d.innerHTML = `${heartBtn}<div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem;"><span><i class="fas fa-bookmark"></i> حديث رقم ${item.number}</span></div><div class="hadith-text">${item.text}</div>`;
+            // تنسيق الحديث ليملأ العرض
+            d.innerHTML = `${heartBtn}
+                <div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem;">
+                    <span><i class="fas fa-bookmark"></i> حديث رقم ${item.number}</span>
+                </div>
+                <div class="hadith-text" style="text-align: justify; padding: 0 10px;">${item.text}</div>`;
         }
         
         grid.appendChild(d);
     });
 }
+      
 
 // دالة مساعدة لتشغيل الراديو مباشرة من المفضلة
 function playRadioDirect(radioItem) {
