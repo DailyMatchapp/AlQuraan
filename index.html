@@ -1203,7 +1203,7 @@ function navigate(view) {
         document.getElementById('progressBar').style.display = 'none';
         document.getElementById('durTime').style.display = 'none';
         const currTime = document.getElementById('currTime');
-        currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> بث مباشر</span>';
+        currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> </span>';
         currTime.style.flex = '1'; currTime.style.textAlign = 'center';
         restorePlayer(); 
         savePlayerState(); 
@@ -2155,7 +2155,7 @@ function playRadioDirect(radioItem) {
     document.getElementById('playBtn').innerHTML = '<i class="fas fa-pause"></i>';
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('durTime').style.display = 'none';
-    document.getElementById('currTime').innerHTML = '<span style="color:#ef4444; font-weight:bold;">بث مباشر</span>';
+    document.getElementById('currTime').innerHTML = '<span style="color:#ef4444; font-weight:bold;"></span>';
     restorePlayer();
 }
       
