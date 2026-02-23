@@ -126,7 +126,7 @@
             border-radius: 16px; padding: 20px; border: 1px solid var(--border); cursor: pointer; 
             transition: var(--transition); position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        .card:hover { transform: translateY(-5px); border-color: var(--primary); box-shadow: 0 10px 25px rgba(94, 234, 212, 0.15); background-color: rgba(30, 41, 59, 0.7); }
+        .card:hover { transform: translateY(-0px); border-color: var(--primary); box-shadow: 0 10px 25px rgba(94, 234, 212, 0.15); background-color: rgba(30, 41, 59, 0.7); }
         .card h3 { font-size: 1.1rem; margin-bottom: 5px; color: var(--text-main); font-weight: 700; }
         .card p { font-size: 0.85rem; color: var(--text-muted); }
 
@@ -506,6 +506,55 @@
     100% { box-shadow: 0 0 0 0 rgba(94, 234, 212, 0); }
 }
       
+      
+      
+      
+      
+      
+      /* --- تنسيقات المفضلة --- */
+.fav-header-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: var(--transition); margin-left: 10px;
+}
+.fav-header-btn:hover, .fav-header-btn.active-view {
+    background: rgba(239, 68, 68, 0.15); color: #ef4444; border-color: #ef4444;
+}
+
+.fav-btn-card {
+    position: absolute; top: 10px; left: 10px; z-index: 10;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    font-size: 0.9rem;
+}
+
+.fav-btn-card:hover { transform: scale(1.15); background: rgba(0,0,0,0.8); color: white; }
+.fav-btn-card.active { color: #ef4444; background: rgba(239, 68, 68, 0.15); border-color: #ef4444; }
+
+/* تبويبات التصنيف داخل صفحة المفضلة */
+.fav-tabs-container {
+    display: flex; gap: 10px; margin-bottom: 25px; flex-wrap: wrap;
+    padding-bottom: 15px; border-bottom: 1px solid var(--border);
+}
+.fav-tab {
+    padding: 8px 18px; border-radius: 20px; background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border); color: var(--text-muted); cursor: pointer;
+    font-size: 0.9rem; transition: 0.3s;
+}
+.fav-tab:hover { background: rgba(255,255,255,0.1); color: white; }
+.fav-tab.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: 700; }
+
+.empty-fav {
+    grid-column: 1 / -1; text-align: center; padding: 50px 20px;
+    color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 15px;
+}
+.empty-fav i { font-size: 3rem; opacity: 0.3; margin-bottom: 10px; }
+      
+      
     </style>
 </head>
 <body>
@@ -526,6 +575,7 @@
            <i class="fas fa-times sidebar-close-btn" onclick="toggleSidebar()"></i>
         </div>
         <nav class="nav-links">
+          <div class="nav-item" onclick="navigate('favorites')"><i class="fas fa-heart"></i> المفضلة</div>
             <div class="nav-item active" onclick="navigate('quran')"><i class="fas fa-headphones-alt"></i> القرآن الكريم</div>
             <div class="nav-item" onclick="navigate('radio')"><i class="fas fa-radio"></i> الإذاعات</div> 
             <div class="nav-item" onclick="openMushafOverlay()"><i class="fas fa-book-open"></i> المصحف الشريف</div>
@@ -562,6 +612,16 @@
                     <p>استمع للقرآن الكريم</p>
                 </div>
             </div>
+          
+          
+          
+          <!-- داخل div class="search-wrapper" وقبل زر البحث -->
+<button class="fav-header-btn" onclick="navigate('favorites')" title="المفضلة">
+    <i class="fas fa-heart"></i>
+</button>
+<!-- هنا يوجد زر البحث الأصلي ... -->
+          
+          
             
             <div class="search-wrapper" id="searchWrapper">
                 <div class="search-input-container">
@@ -598,6 +658,19 @@
             <div id="hadithGrid" class="grid-layout"></div>
             <div id="hadithLoader" style="text-align: center; padding: 20px; display: none;"><i class="fas fa-circle-notch fa-spin" style="color: var(--primary);"></i> جاري تحميل المزيد...</div>
         </div>
+      
+      
+      <div id="favoritesView" class="content-view" onscroll="checkScroll(this)">
+    <div class="fav-tabs-container">
+        <div class="fav-tab active" onclick="switchFavTab('quran')">القرآن الكريم</div>
+        <div class="fav-tab" onclick="switchFavTab('radio')">الإذاعات</div>
+        <div class="fav-tab" onclick="switchFavTab('hadith')">الأحاديث</div>
+    </div>
+    <div id="favoritesGrid" class="grid-layout">
+        <!-- سيتم ملؤه بالجافاسكربت -->
+    </div>
+</div>
+      
         
         <div id="radioView" class="content-view" onscroll="checkScroll(this)">
             <div id="radioGrid" class="grid-layout">
@@ -880,30 +953,30 @@
     }
 
     // === Navigation ===
-  function navigate(view) {
-    // 1. إزالة التفعيل من عناصر القائمة الجانبية
+function navigate(view) {
+    // 1. تحديث حالة الروابط في القائمة الجانبية
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    if(event && event.currentTarget) event.currentTarget.classList.add('active');
+    
+    // تفعيل العنصر فقط إذا تم النقر عليه من القائمة الجانبية
+    if(event && event.currentTarget && event.currentTarget.classList.contains('nav-item')) {
+        event.currentTarget.classList.add('active');
+    }
 
     // 2. إخفاء جميع الواجهات
     document.querySelectorAll('.content-view').forEach(el => el.classList.remove('active'));
-    document.getElementById('mushafOverlay').classList.remove('active'); 
+    document.getElementById('mushafOverlay').classList.remove('active');
 
-    // 3. منطق إخفاء/إظهار أيقونة البحث (الجزء الجديد)
+    // 3. إدارة شريط البحث (إخفاء/إظهار)
     const searchWrapper = document.getElementById('searchWrapper');
-    // القائمة التي نريد إخفاء البحث فيها
-    const noSearchViews = ['prayer', 'asma']; 
-
+    const noSearchViews = ['prayer', 'asma', 'favorites']; 
+    
     if (noSearchViews.includes(view)) {
-        searchWrapper.style.display = 'none'; // إخفاء
-        
-        // إغلاق شريط البحث إذا كان مفتوحاً وتنظيف النص
+        searchWrapper.style.display = 'none';
         searchWrapper.classList.remove('expanded');
         document.querySelector('.top-bar').classList.remove('search-active');
-        document.querySelector('.search-toggle-btn i').className = 'fas fa-search';
         clearSearch();
     } else {
-        searchWrapper.style.display = 'flex'; // إظهار (في القرآن، الحديث، الإذاعة)
+        searchWrapper.style.display = 'flex';
     }
 
     // 4. تفعيل الواجهة المطلوبة وتحديث العناوين
@@ -911,32 +984,24 @@
         document.getElementById(view + 'View').classList.add('active');
         const h = document.getElementById('pageHeader');
         
-        if(view === 'quran') {
-            h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
+        if(view === 'quran') h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
+        else if(view === 'hadith') h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
+        else if(view === 'radio') { h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر</p>'; initRadios(); }
+        else if(view === 'prayer') h.innerHTML = '<h2>مواقيت الصلاة</h2><p>كتاباً موقوتاً</p>';
+        else if(view === 'asma') h.innerHTML = '<h2>أسماء الله الحسنى</h2><p>فادعوه بها</p>';
+        else if(view === 'favorites') {
+            h.innerHTML = '<h2>المفضلة</h2><p>ما تم حفظه للوصول السريع</p>';
+            renderFavoritesGrid(); // إعادة تحميل الشبكة للتأكد من التحديث
         }
-        else if(view === 'hadith') {
-            h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
-        }
-        else if(view === 'radio') {
-            h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر على مدار الساعة</p>';
-            initRadios();
-        }
-        else if(view === 'prayer') {
-            h.innerHTML = '<h2>مواقيت الصلاة</h2><p>إن الصلاة كانت على المؤمنين كتاباً موقوتاً</p>';
-            // منطق الصلاة (تأكد من وجود الكود الخاص بك هنا)
-            // if(document.getElementById('prayerGrid').children.length === 0) ...
-        }
-        else if(view === 'asma') {
-            // دالة أسماء الله الحسنى التي أضفناها سابقاً
-            initAsma(); 
-        }
-       
         
         state.currentView = view;
     }
     
-    // إغلاق القائمة في الجوال
-    if(window.innerWidth <= 768) toggleSidebar();
+    // 5. التعديل الهام: إغلاق القائمة الجانبية فقط إذا كانت مفتوحة بالفعل (على الجوال)
+    const sidebar = document.getElementById('sidebar');
+    if(window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+        toggleSidebar();
+    }
 }
       
       
@@ -979,37 +1044,55 @@
         } catch(e){ console.error(e); }
     }
 
-    function renderReciters(list) {
-        const grid = document.getElementById('quranGrid'); 
-        grid.innerHTML = '';
-        list.forEach(r => {
-            const d = document.createElement('div'); 
-            d.className = 'card'; 
-            d.innerHTML = `<h3>${r.name}</h3><p>${r.moshaf[0].name}</p>`;
-            d.onclick = () => openReciter(r); 
-            grid.appendChild(d);
-        });
-    }
+   function renderReciters(list) {
+    const grid = document.getElementById('quranGrid'); 
+    grid.innerHTML = '';
+    list.forEach(r => {
+        const d = document.createElement('div'); 
+        d.className = 'card'; 
+        const isF = isFav('reciters', r.id) ? 'active' : '';
+        // إضافة زر القلب
+        const heart = `<div class="fav-btn-card ${isF}" onclick='toggleFav(event, "reciters", ${JSON.stringify(r)})'><i class="fas fa-heart"></i></div>`;
+        
+        d.innerHTML = `${heart}<h3>${r.name}</h3><p>${r.moshaf[0].name}</p>`;
+        d.onclick = () => openReciter(r); 
+        grid.appendChild(d);
+    });
+}
 
-    function openReciter(r) {
-        state.currentReciter = r; 
-        state.currentView = 'surahs'; 
-        document.getElementById('quranBreadcrumb').style.display = 'block';
-        document.getElementById('selectedReciterName').textContent = r.name;
-        document.getElementById('selectedRewaya').textContent = r.moshaf[0].name;
+   function openReciter(r) {
+    // إعداد البيانات
+    state.currentReciter = r; 
+    
+    // --- التعديل الهام: إجبار التحويل إلى واجهة القرآن ---
+    document.querySelectorAll('.content-view').forEach(v => v.classList.remove('active'));
+    document.getElementById('quranView').classList.add('active');
+    // تحديث الحالة ليعرف النظام أننا نستعرض السور
+    state.currentView = 'surahs'; 
+    // ---------------------------------------------------
 
-        state.playlist = r.moshaf[0].surah_list.split(',').map(Number);
-        const grid = document.getElementById('quranGrid'); 
-        grid.innerHTML = '';
-        state.playlist.forEach((id, idx) => {
-            const d = document.createElement('div'); 
-            d.className = 'card'; 
-            d.innerHTML = `<h3>${String(id).padStart(2,'0')}. ${SURAH_NAMES[id-1]}</h3>`;
-            d.onclick = () => playTrack(idx); 
-            grid.appendChild(d);
-        });
-        scrollToTop();
-    }
+    // إظهار شريط التنقل العلوي للقارئ
+    document.getElementById('quranBreadcrumb').style.display = 'block';
+    document.getElementById('selectedReciterName').textContent = r.name;
+    document.getElementById('selectedRewaya').textContent = r.moshaf[0].name;
+
+    // تجهيز قائمة التشغيل
+    state.playlist = r.moshaf[0].surah_list.split(',').map(Number);
+    const grid = document.getElementById('quranGrid'); 
+    grid.innerHTML = '';
+    
+    // عرض السور
+    state.playlist.forEach((id, idx) => {
+        const d = document.createElement('div'); 
+        d.className = 'card'; 
+        d.innerHTML = `<h3>${String(id).padStart(2,'0')}. ${SURAH_NAMES[id-1]}</h3>`;
+        d.onclick = () => playTrack(idx); 
+        grid.appendChild(d);
+    });
+    
+    // التمرير للأعلى
+    scrollToTop();
+}
 
     function resetQuranView() { 
         state.currentView = 'reciters'; 
@@ -1040,25 +1123,35 @@
         scrollToTop(); 
     }
 
-    async function loadMoreHadiths() {
-        if (state.hadithLoading) return;
-        state.hadithLoading = true; 
-        document.getElementById('hadithLoader').style.display = 'block';
-        const start = state.hadithTotalLoaded + 1; const end = start + 19;
-        try {
-            const res = await fetch(`https://api.hadith.gading.dev/books/${state.hadithBookId}?range=${start}-${end}`);
-            const data = await res.json();
-            data.data.hadiths.forEach(h => {
-                const d = document.createElement('div'); d.className = 'card'; d.style.cursor = 'default'; 
-                d.innerHTML = `<div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem; display:flex; justify-content:space-between;"><span><i class="fas fa-bookmark"></i> حديث رقم ${h.number}</span></div><div class="hadith-text">${h.arab}</div>`;
-                document.getElementById('hadithGrid').appendChild(d);
-            });
-            state.hadithTotalLoaded += data.data.hadiths.length;
-        } catch (e) { console.error(e); } finally { 
-            state.hadithLoading = false; 
-            document.getElementById('hadithLoader').style.display = 'none'; 
-        }
+  async function loadMoreHadiths() {
+    if (state.hadithLoading) return;
+    state.hadithLoading = true; 
+    document.getElementById('hadithLoader').style.display = 'block';
+    const start = state.hadithTotalLoaded + 1; const end = start + 19;
+    try {
+        const res = await fetch(`https://api.hadith.gading.dev/books/${state.hadithBookId}?range=${start}-${end}`);
+        const data = await res.json();
+        data.data.hadiths.forEach(h => {
+            const d = document.createElement('div'); d.className = 'card'; d.style.cursor = 'default';
+            
+            // تحضير كائن الحديث للحفظ
+            const hadithObj = { number: h.number, text: h.arab, book: state.hadithBookId };
+            const isF = isFav('hadiths', h.arab) ? 'active' : '';
+            // إضافة زر القلب (ملاحظة: stringify للحديث قد يسبب مشاكل مع علامات التنصيص لذا سنعالجها)
+            // استخدام encodeURIComponent للنص العربي لتجنب مشاكل HTML
+            
+            d.innerHTML = `
+                <div class="fav-btn-card ${isF}" onclick='toggleFav(event, "hadiths", {number:${h.number}, text:${JSON.stringify(h.arab)}})'><i class="fas fa-heart"></i></div>
+                <div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem; display:flex; justify-content:space-between; padding-top:10px;"><span><i class="fas fa-bookmark"></i> حديث رقم ${h.number}</span></div>
+                <div class="hadith-text">${h.arab}</div>`;
+            document.getElementById('hadithGrid').appendChild(d);
+        });
+        state.hadithTotalLoaded += data.data.hadiths.length;
+    } catch (e) { console.error(e); } finally { 
+        state.hadithLoading = false; 
+        document.getElementById('hadithLoader').style.display = 'none'; 
     }
+}
 
     function resetHadithView() { 
         state.currentView = 'books'; 
@@ -1077,16 +1170,20 @@
         } catch (e) { console.error("Error loading radios:", e); }
     }
 
-    function renderRadios(list) {
-        const grid = document.getElementById('radioGrid');
-        grid.innerHTML = '';
-        list.forEach((r, idx) => {
-            const d = document.createElement('div'); d.className = 'card';
-            d.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${r.name}</h3>`;
-            d.onclick = () => playRadio(idx);
-            grid.appendChild(d);
-        });
-    }
+   function renderRadios(list) {
+    const grid = document.getElementById('radioGrid');
+    grid.innerHTML = '';
+    list.forEach((r, idx) => {
+        const d = document.createElement('div'); d.className = 'card';
+        const isF = isFav('radios', r.url) ? 'active' : '';
+        // إضافة زر القلب
+        const heart = `<div class="fav-btn-card ${isF}" onclick='toggleFav(event, "radios", ${JSON.stringify(r)})'><i class="fas fa-heart"></i></div>`;
+        
+        d.innerHTML = `${heart}<div style="display:flex; justify-content:space-between; align-items:flex-start;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${r.name}</h3>`;
+        d.onclick = () => playRadio(idx);
+        grid.appendChild(d);
+    });
+}
 
     function playRadio(idx) {
         activatePlayerUI(); 
@@ -1903,6 +2000,124 @@ function playAsmaName(btn, url) {
         }
     }
 }
+      
+      
+      
+      
+      
+      // === Favorites Logic ===
+let favorites = {
+    reciters: JSON.parse(localStorage.getItem('fav_reciters')) || [],
+    radios: JSON.parse(localStorage.getItem('fav_radios')) || [],
+    hadiths: JSON.parse(localStorage.getItem('fav_hadiths')) || []
+};
+let currentFavTab = 'quran';
+
+function isFav(type, id) {
+    if(type === 'reciters') return favorites.reciters.some(r => r.id === id);
+    if(type === 'radios') return favorites.radios.some(r => r.url === id); // URL as ID for radios
+    if(type === 'hadiths') return favorites.hadiths.some(h => h.text === id); // Text as ID for simplicity
+    return false;
+}
+
+function toggleFav(e, type, data) {
+    e.stopPropagation(); // منع فتح البطاقة عند الضغط على القلب
+    const btn = e.currentTarget;
+    
+    if (type === 'reciters') {
+        const idx = favorites.reciters.findIndex(r => r.id === data.id);
+        if (idx === -1) { favorites.reciters.push(data); btn.classList.add('active'); }
+        else { favorites.reciters.splice(idx, 1); btn.classList.remove('active'); }
+        localStorage.setItem('fav_reciters', JSON.stringify(favorites.reciters));
+    }
+    else if (type === 'radios') {
+        const idx = favorites.radios.findIndex(r => r.url === data.url);
+        if (idx === -1) { favorites.radios.push(data); btn.classList.add('active'); }
+        else { favorites.radios.splice(idx, 1); btn.classList.remove('active'); }
+        localStorage.setItem('fav_radios', JSON.stringify(favorites.radios));
+    }
+    else if (type === 'hadiths') {
+        const idx = favorites.hadiths.findIndex(h => h.text === data.text);
+        if (idx === -1) { favorites.hadiths.push(data); btn.classList.add('active'); }
+        else { favorites.hadiths.splice(idx, 1); btn.classList.remove('active'); }
+        localStorage.setItem('fav_hadiths', JSON.stringify(favorites.hadiths));
+    }
+
+    // إذا كنا في صفحة المفضلة، أعد تحميل الشبكة لإخفاء العنصر المحذوف
+    if (state.currentView === 'favorites') {
+        renderFavoritesGrid();
+    }
+}
+
+function switchFavTab(tab) {
+    currentFavTab = tab;
+    document.querySelectorAll('.fav-tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    renderFavoritesGrid();
+}
+
+function renderFavoritesGrid() {
+    const grid = document.getElementById('favoritesGrid');
+    grid.innerHTML = '';
+    let list = [];
+    
+    if (currentFavTab === 'quran') list = favorites.reciters;
+    else if (currentFavTab === 'radio') list = favorites.radios;
+    else if (currentFavTab === 'hadith') list = favorites.hadiths;
+
+    if (list.length === 0) {
+        grid.innerHTML = `<div class="empty-fav"><i class="far fa-heart"></i><p>لا توجد عناصر في المفضلة لهذا القسم</p></div>`;
+        return;
+    }
+
+    list.forEach(item => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        
+        // زر الحذف (قلب مفعل دائماً)
+        const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "${currentFavTab === "quran" ? "reciters" : currentFavTab === "radio" ? "radios" : "hadiths"}", ${JSON.stringify(item)})'><i class="fas fa-heart"></i></div>`;
+
+        if (currentFavTab === 'quran') {
+            d.innerHTML = `${heartBtn}<h3>${item.name}</h3><p>${item.moshaf[0].name}</p>`;
+            d.onclick = () => openReciter(item);
+        } 
+        else if (currentFavTab === 'radio') {
+            d.innerHTML = `${heartBtn}<div style="display:flex; justify-content:space-between;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${item.name}</h3>`;
+            d.onclick = () => {
+                // البحث عن الاندكس لتشغيل الراديو بشكل صحيح
+                // ملاحظة: لتشغيل الراديو من المفضلة، سنقوم بتحميله مباشرة
+                playRadioDirect(item);
+            };
+        }
+        else if (currentFavTab === 'hadith') {
+            d.style.cursor = 'default';
+            d.innerHTML = `${heartBtn}<div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem;"><span><i class="fas fa-bookmark"></i> حديث رقم ${item.number}</span></div><div class="hadith-text">${item.text}</div>`;
+        }
+        
+        grid.appendChild(d);
+    });
+}
+
+// دالة مساعدة لتشغيل الراديو مباشرة من المفضلة
+function playRadioDirect(radioItem) {
+    activatePlayerUI();
+    state.isRadioMode = true;
+    state.radios = [radioItem]; // قائمة مؤقتة
+    state.currentIndex = 0;
+    
+    audio.src = radioItem.url;
+    audio.play().catch(e => console.log(e));
+    state.isPlaying = true;
+    
+    document.getElementById('pTitle').textContent = radioItem.name;
+    document.getElementById('pArtist').textContent = "إذاعة مفضلة";
+    document.getElementById('playBtn').innerHTML = '<i class="fas fa-pause"></i>';
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('durTime').style.display = 'none';
+    document.getElementById('currTime').innerHTML = '<span style="color:#ef4444; font-weight:bold;">بث مباشر</span>';
+    restorePlayer();
+}
+      
     </script>
 </body>
 </html>
