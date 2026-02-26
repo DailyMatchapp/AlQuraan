@@ -1185,29 +1185,47 @@ function navigate(view) {
     });
 }
 
-    function playRadio(idx) {
-        activatePlayerUI(); 
-        state.isRadioMode = true; 
-        state.currentIndex = idx;
-        const radio = state.radios[idx];
-        highlightActiveCard('radioGrid', idx);
-        setPlayerLoading(true);
+   function playRadio(idx) {
+    activatePlayerUI(); 
+    state.isRadioMode = true; 
+    state.currentIndex = idx;
+    const radio = state.radios[idx];
+    
+    // --- الجزء المصلح: تفريغ الصوت تماماً قبل البدء ---
+    audio.pause();
+    audio.src = ""; // تفريغ المسار القديم
+    audio.load();   // إعادة تحميل الكائن لتفريغ الذاكرة
+    // -------------------------------------------
 
-        audio.src = radio.url;
-        audio.play().catch(e => { console.log(e); setPlayerLoading(false); });
-        state.isPlaying = true;
+    highlightActiveCard('radioGrid', idx);
+    setPlayerLoading(true);
 
-        document.getElementById('playBtn').innerHTML = ''; 
-        document.getElementById('pTitle').textContent = radio.name;
-        document.getElementById('pArtist').textContent = "إذاعة";
-        document.getElementById('progressBar').style.display = 'none';
-        document.getElementById('durTime').style.display = 'none';
-        const currTime = document.getElementById('currTime');
-        currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> </span>';
-        currTime.style.flex = '1'; currTime.style.textAlign = 'center';
-        restorePlayer(); 
-        savePlayerState(); 
-    }
+    // إعداد واجهة المشغل قبل البدء لتفادي التأخير البصري
+    document.getElementById('pTitle').textContent = radio.name;
+    document.getElementById('pArtist').textContent = "بث مباشر";
+    document.getElementById('progressBar').style.display = 'none';
+    document.getElementById('durTime').style.display = 'none';
+    const currTime = document.getElementById('currTime');
+    currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> جاري الاتصال...</span>';
+    currTime.style.flex = '1'; currTime.style.textAlign = 'center';
+
+    // بدء التشغيل
+    audio.src = radio.url;
+    audio.play()
+        .then(() => {
+            state.isPlaying = true;
+            updatePlayerUI();
+            setPlayerLoading(false);
+            currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> مباشر</span>';
+        })
+        .catch(e => { 
+            console.error("خطأ في تشغيل الإذاعة:", e); 
+            setPlayerLoading(false); 
+        });
+
+    restorePlayer(); 
+    savePlayerState(); 
+}
  
     // === Search ===
     function toggleSearch() { 
@@ -2143,19 +2161,36 @@ function renderFavoritesGrid() {
 function playRadioDirect(radioItem) {
     activatePlayerUI();
     state.isRadioMode = true;
-    state.radios = [radioItem]; // قائمة مؤقتة
+    
+    // إيقاف وتفريغ تماماً
+    audio.pause();
+    audio.src = "";
+    audio.load();
+
+    state.radios = [radioItem]; 
     state.currentIndex = 0;
     
-    audio.src = radioItem.url;
-    audio.play().catch(e => console.log(e));
-    state.isPlaying = true;
-    
+    setPlayerLoading(true);
+
     document.getElementById('pTitle').textContent = radioItem.name;
     document.getElementById('pArtist').textContent = "إذاعة مفضلة";
-    document.getElementById('playBtn').innerHTML = '<i class="fas fa-pause"></i>';
-    document.getElementById('progressBar').style.display = 'none';
-    document.getElementById('durTime').style.display = 'none';
-    document.getElementById('currTime').innerHTML = '<span style="color:#ef4444; font-weight:bold;"></span>';
+    
+    audio.src = radioItem.url;
+    audio.play()
+        .then(() => {
+            state.isPlaying = true;
+            updatePlayerUI();
+            setPlayerLoading(false);
+            const currTime = document.getElementById('currTime');
+            currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold;"><i class="fas fa-circle"></i> مباشر</span>';
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('durTime').style.display = 'none';
+        })
+        .catch(e => {
+            console.log("خطأ في المفضلة:", e);
+            setPlayerLoading(false);
+        });
+        
     restorePlayer();
 }
       
