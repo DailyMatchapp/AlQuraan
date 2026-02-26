@@ -988,7 +988,10 @@ function navigate(view) {
         else if(view === 'hadith') h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
         else if(view === 'radio') { h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر</p>'; initRadios(); }
         else if(view === 'prayer') h.innerHTML = '<h2>مواقيت الصلاة</h2><p>كتاباً موقوتاً</p>';
-        else if(view === 'asma') h.innerHTML = '<h2>أسماء الله الحسنى</h2><p>فادعوه بها</p>';
+       else if(view === 'asma') { 
+    h.innerHTML = '<h2>أسماء الله الحسنى</h2><p>وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>'; 
+    initAsma(); // استدعاء الدالة لجلب البيانات
+}
         else if(view === 'favorites') {
             h.innerHTML = '<h2>المفضلة</h2><p>ما تم حفظه للوصول السريع</p>';
             renderFavoritesGrid(); // إعادة تحميل الشبكة للتأكد من التحديث
