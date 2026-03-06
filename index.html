@@ -1176,43 +1176,48 @@ function navigate(view) {
    function renderRadios(list) {
     const grid = document.getElementById('radioGrid');
     grid.innerHTML = '';
-    list.forEach((r, idx) => {
-        const d = document.createElement('div'); d.className = 'card';
+    list.forEach((r) => {
+        // نجد الترتيب الحقيقي للإذاعة في المصفوفة الأصلية
+        const originalIndex = state.radios.findIndex(item => item.url === r.url);
+        
+        const d = document.createElement('div'); 
+        d.className = 'card';
         const isF = isFav('radios', r.url) ? 'active' : '';
-        // إضافة زر القلب
+        
         const heart = `<div class="fav-btn-card ${isF}" onclick='toggleFav(event, "radios", ${JSON.stringify(r)})'><i class="fas fa-heart"></i></div>`;
         
         d.innerHTML = `${heart}<div style="display:flex; justify-content:space-between; align-items:flex-start;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${r.name}</h3>`;
-        d.onclick = () => playRadio(idx);
+        
+        // نمرر الترتيب الأصلي هنا
+        d.onclick = () => playRadio(originalIndex);
         grid.appendChild(d);
     });
 }
 
-   function playRadio(idx) {
+  function playRadio(idx) {
+    if (idx === -1) return; // حماية في حال لم يجد العنصر
+    
     activatePlayerUI(); 
     state.isRadioMode = true; 
     state.currentIndex = idx;
-    const radio = state.radios[idx];
+    const radio = state.radios[idx]; // الوصول للمصفوفة الكلية
     
-    // --- الجزء المصلح: تفريغ الصوت تماماً قبل البدء ---
     audio.pause();
-    audio.src = ""; // تفريغ المسار القديم
-    audio.load();   // إعادة تحميل الكائن لتفريغ الذاكرة
-    // -------------------------------------------
+    audio.src = ""; 
+    audio.load();   
 
     highlightActiveCard('radioGrid', idx);
     setPlayerLoading(true);
 
-    // إعداد واجهة المشغل قبل البدء لتفادي التأخير البصري
     document.getElementById('pTitle').textContent = radio.name;
     document.getElementById('pArtist').textContent = "بث مباشر";
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('durTime').style.display = 'none';
+    
     const currTime = document.getElementById('currTime');
     currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> جاري الاتصال...</span>';
     currTime.style.flex = '1'; currTime.style.textAlign = 'center';
 
-    // بدء التشغيل
     audio.src = radio.url;
     audio.play()
         .then(() => {
