@@ -663,6 +663,7 @@
       <div id="favoritesView" class="content-view" onscroll="checkScroll(this)">
     <div class="fav-tabs-container">
         <div class="fav-tab active" onclick="switchFavTab('quran')">القرآن الكريم</div>
+       <div class="fav-tab" onclick="switchFavTab('surahs')">السور المختارة</div>
         <div class="fav-tab" onclick="switchFavTab('radio')">الإذاعات</div>
         <div class="fav-tab" onclick="switchFavTab('hadith')">الأحاديث</div>
     </div>
@@ -755,6 +756,11 @@
         </div>
 
         <div class="volume-area">
+          
+          <button class="btn-ctrl" id="playerFavBtn" onclick="toggleCurrentTrackFav()" title="إضافة التلاوة للمفضلة">
+        <i class="far fa-heart"></i>
+    </button>
+          
             <input type="range" class="volume-slider" style="direction: ltr;" min="0" max="1" step="0.1" value="1" oninput="setVolume(this.value)">
             <button class="btn-ctrl" style="direction: ltr;" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up"></i></button>
             <button class="btn-ctrl" onclick="openSyncMushaf()" title="فتح المصحف على التلاوة الحالية" style="margin-right:10px">
@@ -1360,27 +1366,51 @@ function navigate(view) {
         updatePlayerUI(); 
     }
     
-    function updatePlayerUI() {
-         if (!document.getElementById('playBtn').classList.contains('loading')) {
-            document.getElementById('playBtn').innerHTML = state.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
-        }
-        const restoreBtn = document.querySelector('.restore-player-btn');
-        if (state.isPlaying) {
-            restoreBtn.classList.add('playing');
-        } else {
-            restoreBtn.classList.remove('playing');
-        }
-
-        if(!state.isRadioMode && state.currentIndex !== -1 && state.playlist.length > 0) {
-            const id = state.playlist[state.currentIndex];
-            document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
-            document.getElementById('pArtist').textContent = state.currentReciter.name;
-        }
-        const activeCard = document.querySelector('.card.active-track');
-        if (activeCard) {
-            if (state.isPlaying) activeCard.classList.add('playing-state'); else activeCard.classList.remove('playing-state');
-        }
+   function updatePlayerUI() {
+    // 1. تحديث شكل زر التشغيل (Play/Pause)
+    if (!document.getElementById('playBtn').classList.contains('loading')) {
+        document.getElementById('playBtn').innerHTML = state.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
     }
+
+    // 2. تحديث حالة الزر العائم (Restore Button)
+    const restoreBtn = document.querySelector('.restore-player-btn');
+    if (state.isPlaying) {
+        restoreBtn.classList.add('playing');
+    } else {
+        restoreBtn.classList.remove('playing');
+    }
+
+    // 3. تحديث نصوص الأغنية (اسم السورة والقارئ) وزر القلب
+    if(!state.isRadioMode && state.currentIndex !== -1 && state.playlist.length > 0) {
+        const id = state.playlist[state.currentIndex];
+        document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
+        document.getElementById('pArtist').textContent = state.currentReciter.name;
+
+        // --- الجزء المضاف لزر القلب في المشغل ---
+        const favBtn = document.getElementById('playerFavBtn'); // تأكد أنك أضفت هذا الـ ID في الـ HTML
+        if (favBtn) {
+            favBtn.style.display = 'inline-block'; // إظهاره في وضع القرآن
+            const trackId = `${state.currentReciter.id}_${id}`; // معرف السورة مع القارئ
+            // فحص هل السورة موجودة في مصفوفة favorites.surahs
+            const isFav = favorites.surahs && favorites.surahs.some(s => s.trackId === trackId);
+            // تغيير شكل القلب
+            favBtn.innerHTML = isFav ? '<i class="fas fa-heart" style="color:#ef4444"></i>' : '<i class="far fa-heart"></i>';
+        }
+        // ---------------------------------------
+
+    } else if (state.isRadioMode) {
+        // إخفاء زر قلب السور عند تشغيل الراديو
+        const favBtn = document.getElementById('playerFavBtn');
+        if (favBtn) favBtn.style.display = 'none';
+    }
+
+    // 4. تحديث حالة البطاقة النشطة في الشبكة (Grid)
+    const activeCard = document.querySelector('.card.active-track');
+    if (activeCard) {
+        if (state.isPlaying) activeCard.classList.add('playing-state'); 
+        else activeCard.classList.remove('playing-state');
+    }
+}
 
     function minimizePlayer() { 
         document.getElementById('playerDock').classList.add('minimized'); 
@@ -2053,7 +2083,8 @@ function playAsmaName(btn, url) {
 let favorites = {
     reciters: JSON.parse(localStorage.getItem('fav_reciters')) || [],
     radios: JSON.parse(localStorage.getItem('fav_radios')) || [],
-    hadiths: JSON.parse(localStorage.getItem('fav_hadiths')) || []
+    hadiths: JSON.parse(localStorage.getItem('fav_hadiths')) || [],
+   surahs: JSON.parse(localStorage.getItem('fav_surahs')) || [] 
 };
 let currentFavTab = 'quran';
 
@@ -2105,26 +2136,23 @@ function switchFavTab(tab) {
 function renderFavoritesGrid() {
     const grid = document.getElementById('favoritesGrid');
     
-    // --- بداية التعديل: تغيير تخطيط الشبكة بناءً على التبويب ---
+    // ضبط تخطيط الشبكة
     if (currentFavTab === 'hadith') {
-        // في حالة الأحاديث: عمود واحد فقط (حديث فوق حديث) لجميع الشاشات
         grid.style.gridTemplateColumns = '1fr';
     } else {
-        // في حالة القرآن والإذاعات: شبكة عادية (بطاقات بجانب بعض)
         grid.style.removeProperty('grid-template-columns');
-        // أو للتأكد نقوم بإعادة تعيينها كما في CSS الأصلي
         grid.style.gridTemplateColumns = 'repeat(auto-fill, minmax(200px, 1fr))';
     }
-    // --- نهاية التعديل ---
 
     grid.innerHTML = '';
     let list = [];
     
     if (currentFavTab === 'quran') list = favorites.reciters;
+    else if (currentFavTab === 'surahs') list = favorites.surahs; // جلب السور من المفضلة
     else if (currentFavTab === 'radio') list = favorites.radios;
     else if (currentFavTab === 'hadith') list = favorites.hadiths;
 
-    if (list.length === 0) {
+    if (!list || list.length === 0) {
         grid.innerHTML = `<div class="empty-fav"><i class="far fa-heart"></i><p>لا توجد عناصر في المفضلة لهذا القسم</p></div>`;
         return;
     }
@@ -2133,26 +2161,30 @@ function renderFavoritesGrid() {
         const d = document.createElement('div');
         d.className = 'card';
         
-        // زر الحذف (قلب مفعل دائماً)
-        const itemData = currentFavTab === 'hadith' ? 
-            {number: item.number, text: item.text} : // إصلاح هيكلة بيانات الحديث
-            item;
-
-        const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "${currentFavTab === "quran" ? "reciters" : currentFavTab === "radio" ? "radios" : "hadiths"}", ${JSON.stringify(itemData)})'><i class="fas fa-heart"></i></div>`;
-
-        if (currentFavTab === 'quran') {
+        if (currentFavTab === 'surahs') {
+            // تصميم بطاقة السورة المفضلة (سورة + قارئ)
+            const heartBtn = `<div class="fav-btn-card active" onclick='deleteSurahFav(event, "${item.trackId}")'><i class="fas fa-heart"></i></div>`;
+            d.innerHTML = `
+                ${heartBtn}
+                <h3 style="color:var(--primary); margin-bottom:5px;">${item.surahName}</h3>
+                <p style="font-size:0.85rem; color:var(--text-main);">${item.reciter.name}</p>
+                <p style="font-size:0.75rem; color:var(--text-muted);">${item.rewaya}</p>
+            `;
+            d.onclick = () => playFavoriteSurah(item);
+        } 
+        else if (currentFavTab === 'quran') {
+            const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "reciters", ${JSON.stringify(item)})'><i class="fas fa-heart"></i></div>`;
             d.innerHTML = `${heartBtn}<h3>${item.name}</h3><p>${item.moshaf[0].name}</p>`;
             d.onclick = () => openReciter(item);
-        } 
+        }
         else if (currentFavTab === 'radio') {
+            const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "radios", ${JSON.stringify(item)})'><i class="fas fa-heart"></i></div>`;
             d.innerHTML = `${heartBtn}<div style="display:flex; justify-content:space-between;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${item.name}</h3>`;
-            d.onclick = () => {
-                playRadioDirect(item);
-            };
+            d.onclick = () => playRadioDirect(item);
         }
         else if (currentFavTab === 'hadith') {
             d.style.cursor = 'default';
-            // تنسيق الحديث ليملأ العرض
+            const heartBtn = `<div class="fav-btn-card active" onclick='toggleFav(event, "hadiths", {number:${item.number}, text:${JSON.stringify(item.text)}})'><i class="fas fa-heart"></i></div>`;
             d.innerHTML = `${heartBtn}
                 <div style="color:var(--primary); margin-bottom:15px; font-weight:bold; font-size:1.1rem;">
                     <span><i class="fas fa-bookmark"></i> حديث رقم ${item.number}</span>
@@ -2200,6 +2232,68 @@ function playRadioDirect(radioItem) {
         });
         
     restorePlayer();
+}
+      
+      
+      
+      
+      
+      function toggleCurrentTrackFav() {
+    if (state.isRadioMode || !state.currentReciter || state.currentIndex === -1) return;
+
+    const surahId = state.playlist[state.currentIndex];
+    const trackId = `${state.currentReciter.id}_${surahId}`; // معرف فريد (رقم القارئ + رقم السورة)
+
+    const idx = favorites.surahs.findIndex(s => s.trackId === trackId);
+    
+    if (idx === -1) {
+        // إضافة للمفضلة
+        const trackData = {
+            trackId: trackId,
+            surahId: surahId,
+            surahName: SURAH_NAMES[surahId - 1],
+            reciter: state.currentReciter,
+            rewaya: state.currentReciter.moshaf[0].name
+        };
+        favorites.surahs.push(trackData);
+        showMushafToast("تمت الإضافة للمفضلة");
+    } else {
+        // حذف من المفضلة
+        favorites.surahs.splice(idx, 1);
+        showMushafToast("تم الحذف من المفضلة");
+    }
+
+    localStorage.setItem('fav_surahs', JSON.stringify(favorites.surahs));
+    updatePlayerUI(); // لتحديث شكل القلب
+}
+      
+      
+      // دالة حذف سورة معينة من المفضلة
+function deleteSurahFav(e, trackId) {
+    e.stopPropagation();
+    favorites.surahs = favorites.surahs.filter(s => s.trackId !== trackId);
+    localStorage.setItem('fav_surahs', JSON.stringify(favorites.surahs));
+    renderFavoritesGrid();
+    updatePlayerUI(); // لتحديث القلب في المشغل إذا كانت نفس السورة تعمل
+}
+
+// دالة تشغيل السورة المختارة من المفضلة
+function playFavoriteSurah(data) {
+    // 1. تعيين القارئ الحالي
+    state.currentReciter = data.reciter;
+    // 2. تعيين قائمة السور الخاصة بهذا القارئ
+    state.playlist = data.reciter.moshaf[0].surah_list.split(',').map(Number);
+    
+    // 3. البحث عن موقع السورة في قائمة القارئ
+    const surahIndex = state.playlist.indexOf(parseInt(data.surahId));
+    
+    if (surahIndex !== -1) {
+        // 4. تشغيل السورة
+        playTrack(surahIndex);
+        showMushafToast(`جاري تشغيل سورة ${data.surahName} - ${data.reciter.name}`);
+    } else {
+        showMushafToast("عذراً، هذه السورة غير متوفرة لهذا القارئ");
+    }
 }
       
     </script>
