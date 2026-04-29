@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>أثير القرآن - المصحف الشامل</title>
+    <title> القرآن الكريم Mp3 - المصحف الشامل</title>
     <link rel="icon" type="image/png" href="https://i.ibb.co/chxtStMv/bf86ad37-7f61-4aff-8f0f-81a45bd6f1ce.jpg">
   
     <!-- الخطوط والأيقونات -->
@@ -573,6 +573,13 @@
 .empty-fav i { font-size: 3rem; opacity: 0.3; margin-bottom: 10px; }
       
       
+     
+
+/* لجعل زر التحميل يختفي في وضع الراديو */
+body.radio-active #downloadBtn {
+    display: none;
+}
+      
     </style>
 </head>
 <body>
@@ -589,7 +596,7 @@
         <div class="brand">
            
             <img class="logo" src="https://i.ibb.co/chxtStMv/bf86ad37-7f61-4aff-8f0f-81a45bd6f1ce.jpg">
-            <span>أثير القرآن</span>
+            <span> القرآن الكريم</span>
            <i class="fas fa-times sidebar-close-btn" onclick="toggleSidebar()"></i>
         </div>
         <nav class="nav-links">
@@ -820,6 +827,11 @@
             <button class="btn-ctrl" onclick="openSyncMushaf()" title="فتح المصحف على التلاوة الحالية" style="margin-right:10px">
     <i class="fas fa-book-open"></i>
 </button>
+          
+           <button class="btn-ctrl" id="downloadBtn" onclick="downloadCurrentTrack()" title="تحميل السورة">
+        <i class="fas fa-download"></i>
+    </button>
+          
         </div>
     </div>
     
@@ -938,65 +950,71 @@
         localStorage.setItem('atheer_player_state', JSON.stringify(stateToSave));
     }
 
-   async function restorePlayerState() {
-        const saved = localStorage.getItem('atheer_player_state');
-        if (!saved) return;
+  async function restorePlayerState() {
+    const saved = localStorage.getItem('atheer_player_state');
+    if (!saved) return;
+    
+    try {
+        const data = JSON.parse(saved);
+        state.isRadioMode = data.isRadioMode;
         
-        try {
-            const data = JSON.parse(saved);
-            state.isRadioMode = data.isRadioMode;
+        if (state.isRadioMode && data.radioData) {
+            // إضافة الكلاس لإخفاء الزر إذا كان المخزن هو راديو
+            document.body.classList.add('radio-active');
+
+            state.currentIndex = 0; 
+            initRadios().then(() => {
+                const idx = state.radios.findIndex(r => r.url === data.radioData.url);
+                if (idx !== -1) state.currentIndex = idx;
+            });
+            
+            document.getElementById('pTitle').textContent = data.radioData.name;
+            document.getElementById('pArtist').textContent = "إذاعة";
+            document.getElementById('progressBar').style.display = 'none';
+            document.getElementById('durTime').style.display = 'none';
+            const currTime = document.getElementById('currTime');
+            currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> متوقف</span>';
+            
+        } else if (data.reciter) {
+            // إزالة الكلاس لإظهار الزر إذا كان المخزن هو قرآن
+            document.body.classList.remove('radio-active');
+
+            state.currentReciter = data.reciter;
+            state.playlist = data.playlist;
+            state.currentIndex = data.currentIndex;
+            
+            if (state.playlist && state.playlist.length > state.currentIndex) {
+                const id = state.playlist[state.currentIndex];
+                document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
+                document.getElementById('pArtist').textContent = state.currentReciter.name;
+            }
+        }
+
+        state.isPlaying = false;
+        
+        const restoreBtn = document.querySelector('.restore-player-btn');
+        restoreBtn.style.display = 'flex';
+        restoreBtn.classList.remove('playing');
+        restoreBtn.style.transform = 'scale(1)'; 
+        
+        restoreBtn.onclick = function() {
+            activatePlayerUI(); 
             
             if (state.isRadioMode && data.radioData) {
-                state.currentIndex = 0; 
-                initRadios().then(() => {
-                    const idx = state.radios.findIndex(r => r.url === data.radioData.url);
-                    if (idx !== -1) state.currentIndex = idx;
-                });
-                
-                document.getElementById('pTitle').textContent = data.radioData.name;
-                document.getElementById('pArtist').textContent = "إذاعة";
-                document.getElementById('progressBar').style.display = 'none';
-                document.getElementById('durTime').style.display = 'none';
-                const currTime = document.getElementById('currTime');
-                currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> متوقف</span>';
-                
+                 audio.src = data.radioData.url;
+                 playRadio(state.currentIndex);
             } else if (data.reciter) {
-                state.currentReciter = data.reciter;
-                state.playlist = data.playlist;
-                state.currentIndex = data.currentIndex;
-                
-                if (state.playlist && state.playlist.length > state.currentIndex) {
-                    const id = state.playlist[state.currentIndex];
-                    document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
-                    document.getElementById('pArtist').textContent = state.currentReciter.name;
-                }
+                const id = state.playlist[state.currentIndex];
+                audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
+                audio.currentTime = data.currentTime || 0;
+                togglePlayState(); 
             }
-
-            state.isPlaying = false;
             
-            const restoreBtn = document.querySelector('.restore-player-btn');
-            restoreBtn.style.display = 'flex';
-            restoreBtn.classList.remove('playing');
-            restoreBtn.style.transform = 'scale(1)'; 
-            
-            restoreBtn.onclick = function() {
-                activatePlayerUI(); 
-                
-                if (state.isRadioMode && data.radioData) {
-                     audio.src = data.radioData.url;
-                     playRadio(state.currentIndex);
-                } else if (data.reciter) {
-                    const id = state.playlist[state.currentIndex];
-                    audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
-                    audio.currentTime = data.currentTime || 0;
-                    togglePlayState(); 
-                }
-                
-                this.onclick = restorePlayer;
-            };
+            this.onclick = restorePlayer;
+        };
 
-        } catch (e) { console.error("Error restoring state:", e); }
-    }
+    } catch (e) { console.error("Error restoring state:", e); }
+}
 
     window.addEventListener('beforeunload', savePlayerState);
     audio.addEventListener('pause', savePlayerState);
@@ -1260,11 +1278,15 @@ function navigate(view) {
     });
 }
 
-  function playRadio(idx) {
+ function playRadio(idx) {
     if (idx === -1) return; // حماية في حال لم يجد العنصر
     
     activatePlayerUI(); 
     state.isRadioMode = true; 
+    
+    // إخفاء أيقونة التحميل عند تفعيل الراديو
+    document.body.classList.add('radio-active');
+
     state.currentIndex = idx;
     const radio = state.radios[idx]; // الوصول للمصفوفة الكلية
     
@@ -1377,30 +1399,35 @@ function navigate(view) {
 
     // === Player Logic ===
     function playTrack(idx) {
-        activatePlayerUI(); 
-        state.isRadioMode = false; state.currentIndex = idx; 
-        highlightActiveCard('quranGrid', idx);
-        setPlayerLoading(true);
+    activatePlayerUI(); 
+    state.isRadioMode = false; 
+    
+    // إظهار أيقونة التحميل عند تشغيل القرآن
+    document.body.classList.remove('radio-active');
 
-        const id = state.playlist[idx];
-        audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
-        
-        audio.play().catch(e => { console.error(e); setPlayerLoading(false); }); 
-        state.isPlaying = true; 
-        
-        document.getElementById('progressBar').style.display = 'block';
-        document.getElementById('durTime').style.display = 'block';
-        
-        const currTime = document.getElementById('currTime');
-        currTime.textContent = '00:00';
-        document.getElementById('durTime').textContent = '--:--';
-        currTime.style.flex = '0 0 auto'; currTime.style.textAlign = 'right';
-        document.getElementById('progressFill').style.width = '0%';
+    state.currentIndex = idx; 
+    highlightActiveCard('quranGrid', idx);
+    setPlayerLoading(true);
 
-        updatePlayerUI();
-        restorePlayer();
-        savePlayerState();
-    }
+    const id = state.playlist[idx];
+    audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
+    
+    audio.play().catch(e => { console.error(e); setPlayerLoading(false); }); 
+    state.isPlaying = true; 
+    
+    document.getElementById('progressBar').style.display = 'block';
+    document.getElementById('durTime').style.display = 'block';
+    
+    const currTime = document.getElementById('currTime');
+    currTime.textContent = '00:00';
+    document.getElementById('durTime').textContent = '--:--';
+    currTime.style.flex = '0 0 auto'; currTime.style.textAlign = 'right';
+    document.getElementById('progressFill').style.width = '0%';
+
+    updatePlayerUI();
+    restorePlayer();
+    savePlayerState();
+}
     
     function highlightActiveCard(gridId, index) {
         document.querySelectorAll('.card').forEach(c => {
@@ -2262,6 +2289,9 @@ function playRadioDirect(radioItem) {
     activatePlayerUI();
     state.isRadioMode = true;
     
+    // إخفاء أيقونة التحميل عند تفعيل الراديو من المفضلة
+    document.body.classList.add('radio-active');
+
     // إيقاف وتفريغ تماماً
     audio.pause();
     audio.src = "";
@@ -2448,6 +2478,48 @@ else if (state.currentView === 'azkar') {
     renderAzkarIndex(titles);
 }
 */
+      
+      
+      
+      function downloadCurrentTrack() {
+    // 1. التحقق من وجود ملف صوتي
+    if (state.isRadioMode || !audio.src || audio.src === "") {
+        showMushafToast("لا يمكن تحميل البث المباشر");
+        return;
+    }
+
+    const downloadBtn = document.getElementById('downloadBtn');
+    const originalIcon = downloadBtn.innerHTML;
+    
+    // جلب معلومات الملف
+    const surahName = document.getElementById('pTitle').textContent;
+    const reciterName = document.getElementById('pArtist').textContent;
+    const audioUrl = audio.src;
+
+    // تغيير شكل الزر لحظياً للتغذية الراجعة
+    downloadBtn.innerHTML = '<i class="fas fa-check"></i>';
+    showMushafToast("جاري فتح رابط التحميل...");
+
+    // الطريقة الأضمن: إنشاء رابط بصيغة تطلب من المتصفح التحميل
+    const link = document.createElement('a');
+    link.href = audioUrl;
+    
+    // محاولة إجبار المتصفح على التحميل (تعمل في بعض المتصفحات)
+    link.setAttribute('download', `${surahName} - ${reciterName}.mp3`);
+    
+    // فتح في نافذة جديدة لضمان عدم توقف الموقع
+    link.target = '_blank';
+    
+    // إضافة الرابط للمستند وتنفيذ النقرة
+    document.body.appendChild(link);
+    link.click();
+    
+    // إزالة الرابط بعد التنفيذ
+    setTimeout(() => {
+        document.body.removeChild(link);
+        downloadBtn.innerHTML = originalIcon;
+    }, 2000);
+}
       
     </script>
 </body>
