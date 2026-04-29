@@ -2415,9 +2415,9 @@ function openAzkarChapter(title) {
             let styledText = txt.replace(/\{(.*?)\}/g, '<span style="color:var(--primary); font-weight:bold;">﴿$1﴾</span>');
             
             d.innerHTML = `
-                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">[ ${idx + 1} ]</div>
-                <div class="hadith-text" style="font-size: 1.4rem; line-height: 1.8;">${styledText}</div>
-            `;
+    <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">[ ${idx + 1} ]</div>
+    <div class="hadith-text">${styledText}</div> 
+`;
             details.appendChild(d);
         });
     }
