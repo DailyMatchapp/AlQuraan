@@ -586,6 +586,10 @@
             <div class="nav-item" onclick="navigate('radio')"><i class="fas fa-radio"></i> الإذاعات</div> 
             <div class="nav-item" onclick="openMushafOverlay()"><i class="fas fa-book-open"></i> المصحف الشريف</div>
             <div class="nav-item" onclick="navigate('hadith')"><i class="fas fa-book-reader"></i> الحديث الشريف</div>
+          <!-- أضف هذا السطر مع بقية العناصر في القائمة الجانبية -->
+<div class="nav-item" onclick="navigate('azkar')">
+    <i class="fas fa-shield-halved"></i> حصن المسلم
+</div>
             <div class="nav-item" onclick="navigate('prayer')"><i class="fas fa-mosque"></i> مواقيت الصلاة</div>
          <div class="nav-item" onclick="navigate('asma')">
     <i class="fas fa-star-and-crescent"></i> أسماء الله الحسنى
@@ -732,6 +736,38 @@
         </div>
     </div>
 </div>
+      
+      
+      <!-- واجهة حصن المسلم -->
+<div id="azkarView" class="content-view" onscroll="checkScroll(this)">
+    <!-- زر الرجوع للفهرس (يظهر عند فتح ذكر معين) -->
+    <div id="azkarBreadcrumb" style="display: none; margin-bottom: 20px;">
+        <div class="reciter-info-header">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-book-open"></i>
+                <span id="currentAzkarTitle">اسم الباب</span>
+            </div>
+            <button onclick="resetAzkarView()" style="background:none; border:1px solid var(--primary); color:var(--primary); padding:5px 15px; border-radius:20px; cursor:pointer; font-size:0.85rem;">
+                <i class="fas fa-arrow-right"></i> العودة للفهرس
+            </button>
+        </div>
+    </div>
+
+    <!-- شبكة العناوين (الفهرس) -->
+    <div id="azkarGrid" class="grid-layout">
+        <div style="text-align: center; grid-column: 1/-1; margin-top: 50px;">
+            <i class="fas fa-circle-notch fa-spin fa-2x" style="color: var(--primary);"></i>
+        </div>
+    </div>
+
+    <!-- مكان عرض الأذكار (يظهر عند اختيار عنوان) -->
+    <div id="azkarDetails" class="grid-layout" style="display:none; grid-template-columns: 1fr !important;">
+        <!-- سيتم ملؤه بالجافاسكربت -->
+    </div>
+</div>
+      
+      
+      
       
         <div class="back-to-top" id="backToTopBtn" onclick="scrollToTop()">
             <i class="fas fa-arrow-up"></i>
@@ -1009,6 +1045,12 @@ function navigate(view) {
             renderFavoritesGrid(); // إعادة تحميل الشبكة للتأكد من التحديث
         }
         
+      // 👇 هنا تضع الكود الجديد الخاص بحصن المسلم 👇
+        else if(view === 'azkar') { 
+            h.innerHTML = '<h2>حصن المسلم</h2><p>من أذكار الكتاب والسنة</p>'; 
+            initAzkar(); 
+        }
+      
         state.currentView = view;
     }
     
@@ -2301,6 +2343,99 @@ function playFavoriteSurah(data) {
         showMushafToast("عذراً، هذه السورة غير متوفرة لهذا القارئ");
     }
 }
+      
+      
+      
+      // === Azkar Logic (Hisn Al-Muslim) ===
+const AZKAR_URL = 'https://raw.githubusercontent.com/rn0x/hisn_almuslim_json/main/hisn_almuslim.json';
+
+async function initAzkar() {
+    if (state.azkarData) {
+        renderAzkarIndex(Object.keys(state.azkarData));
+        return;
+    }
+
+    try {
+        const res = await fetch(AZKAR_URL);
+        state.azkarData = await res.json();
+        renderAzkarIndex(Object.keys(state.azkarData));
+    } catch (e) {
+        console.error("Error loading Azkar:", e);
+        document.getElementById('azkarGrid').innerHTML = '<p style="text-align:center; grid-column:1/-1;">خطأ في تحميل البيانات..</p>';
+    }
+}
+
+function renderAzkarIndex(titles) {
+    state.currentView = 'azkar';
+    document.getElementById('azkarBreadcrumb').style.display = 'none';
+    document.getElementById('azkarDetails').style.display = 'none';
+    const grid = document.getElementById('azkarGrid');
+    grid.style.display = 'grid';
+    grid.innerHTML = '';
+
+    titles.forEach(title => {
+        const d = document.createElement('div');
+        d.className = 'card';
+        d.innerHTML = `<h3 style="font-size:1rem; line-height:1.4;">${title}</h3>`;
+        d.onclick = () => openAzkarChapter(title);
+        grid.appendChild(d);
+    });
+}
+
+function openAzkarChapter(title) {
+    state.currentView = 'azkarDetails';
+    const data = state.azkarData[title];
+    document.getElementById('azkarGrid').style.display = 'none';
+    document.getElementById('azkarBreadcrumb').style.display = 'block';
+    document.getElementById('currentAzkarTitle').textContent = title;
+    
+    const details = document.getElementById('azkarDetails');
+    details.style.display = 'grid';
+    details.innerHTML = '';
+
+    if (data.text) {
+        data.text.forEach((txt, idx) => {
+            const d = document.createElement('div');
+            d.className = 'card';
+            d.style.cursor = 'default';
+            
+            // تحسين شكل النص (تلوين الآيات بين القوسين {})
+            let styledText = txt.replace(/\{(.*?)\}/g, '<span style="color:var(--primary); font-weight:bold;">﴿$1﴾</span>');
+            
+            d.innerHTML = `
+                <div style="color:var(--primary); margin-bottom:10px; font-weight:bold;">[ ${idx + 1} ]</div>
+                <div class="hadith-text" style="font-size: 1.6rem; line-height: 1.8;">${styledText}</div>
+            `;
+            details.appendChild(d);
+        });
+    }
+
+    // إضافة التخريج إذا وجد
+    if (data.footnote && data.footnote.length > 0) {
+        const f = document.createElement('div');
+        f.className = 'card';
+        f.style.borderStyle = 'dashed';
+        f.style.opacity = '0.8';
+        let notes = data.footnote.map((n, i) => `<p style="font-size:0.85rem; margin-bottom:5px;">[${i+1}] ${n}</p>`).join('');
+        f.innerHTML = `<h4 style="color:var(--primary); margin-bottom:10px;"><i class="fas fa-info-circle"></i> التخريج والمصدر:</h4>${notes}`;
+        details.appendChild(f);
+    }
+    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function resetAzkarView() {
+    renderAzkarIndex(Object.keys(state.azkarData));
+}
+
+// تعديل دالة البحث لتعمل مع حصن المسلم
+// ابحث عن handleSearchInput وأضف هذا الشرط داخلها:
+/*
+else if (state.currentView === 'azkar') {
+    const titles = Object.keys(state.azkarData).filter(t => t.includes(val));
+    renderAzkarIndex(titles);
+}
+*/
       
     </script>
 </body>
