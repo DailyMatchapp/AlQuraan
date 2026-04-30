@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -171,7 +170,15 @@
         body.player-active .back-to-top { bottom: 130px; }
         body.player-active.player-minimized .back-to-top { bottom: 85px !important; left: 22px; }
 
-        .player-dock { background: rgba(10, 10, 10, 0.85); position: fixed; bottom: 20px; left: 20px; right: calc(var(--sidebar-width) + 20px); height: var(--player-height); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 0 25px; z-index: 100; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .player-dock { background: rgba(10, 10, 10, 0.85); position: fixed; bottom: 20px; left: 20px; right: calc(var(--sidebar-width) + 20px); height: 110px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; padding: 0 25px; z-index: 100; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+      
+      .player-inner-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    align-items: center;
+}
+      
         .player-dock.minimized { transform: translateY(150%); pointer-events: none; }
         .player-dock, .restore-player-btn { display: none !important; }
         body.player-active .player-dock { display: flex !important; }
@@ -218,21 +225,40 @@
         @keyframes spin { to { transform: rotate(360deg); } }
         .minimize-btn { position: absolute; top: -15px; right: 20px; background: var(--bg-card); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; }
         
-        .controls-area { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
-        .main-controls { display: flex; align-items: center; gap: 15px; }
+        .controls-area { 
+          width: 100%;
+          display: flex; 
+          flex-direction: column; 
+          align-items: center; 
+          gap: 8px; }
+        .main-controls { display: flex; align-items: center; gap: 20px; }
         .btn-ctrl { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
         .btn-ctrl:hover { color: white; }
         .btn-play { width: 42px; height: 42px; background: var(--primary); color: #000; border-radius: 50%; border:none; cursor: pointer; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 20px var(--primary-glow); }
-        .progress-wrapper { width: 100%; max-width: 450px; display: flex; align-items: center; gap: 10px; font-size: 0.7rem; color: var(--text-muted); direction: ltr; }
+        .progress-wrapper { width: 100%; max-width: 600px; display: flex; align-items: center; gap: 10px; font-size: 0.7rem; color: var(--text-muted); direction: ltr; }
         .progress-bar-bg { flex: 1; height: 4px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; position: relative; }
         .progress-fill { height: 100%; background: var(--primary); border-radius: 4px; width: 0%; box-shadow: 0 0 10px var(--primary-glow); }
-        .track-info { width: 25%; display: flex; flex-direction: column; justify-content: center; }
-        .track-title { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: white; }
-        .track-artist { font-size: 0.75rem; color: var(--primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .track-info { width: 80%; display: flex; flex-direction: row; justify-content: center; margin-bottom: 8px; gap: 5px 10px; }
+        .track-title { font-weight: 800; font-size: 0.95rem; white-space: nowrap; overflow: hidden;  color: var(--text-main); }
+        .track-artist { font-size: 0.90rem; color: var(--primary); white-space: nowrap; overflow: hidden;  }
+        .info-separator {
+    color: var(--border);
+    font-size: 1rem;
+}
         .volume-area { width: 25%; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
-        .volume-slider { width: 60px; -webkit-appearance: none; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; }
+      
+        .volume-slider { width: 50px; -webkit-appearance: none; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; }
         .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); cursor: pointer; }
 
+      
+      
+      
+   
+      
+      
+      
+      
+      
         /* Mushaf Overlay */
         .mushaf-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #050505; z-index: 2000; display: none; flex-direction: column; font-family: 'Cairo', sans-serif; animation: fadeIn 0.3s ease; }
         .mushaf-overlay.active { display: flex; }
@@ -298,8 +324,11 @@
             .sidebar { position: fixed; right: -100%; top: 0; width: 100%; height: 100vh; z-index: 9999; transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1); background: rgba(5, 5, 5, 0.98); backdrop-filter: blur(20px); border-left: none; }
             .sidebar.active { right: 0; }
             
-            .player-dock { left: 10px; right: 10px; bottom: 10px; padding: 0 15px; }
+            .player-dock { left: 10px; right: 10px; bottom: 10px; padding: 0 15px; height: 120px;}
             .volume-slider { display: none; }
+           .track-info {
+        gap: 5px;
+    }
             .reciter-info-header { flex-direction: column; align-items: flex-start; gap: 10px; }
             .mushaf-select { max-width: 80px; }
             .mushaf-select-group { gap: 5px; }
@@ -317,6 +346,11 @@
             .page-content { padding: 5px !important; }
             .main-container { margin-right: 0; width: 100%; }
         }
+      
+      
+
+      
+      
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
       
         /* --- تنسيقات مواقيت الصلاة (محسنة) --- */
@@ -580,6 +614,61 @@ body.radio-active #downloadBtn {
     display: none;
 }
       
+  /* إخفاء زر المصحف عندما يكون وضع الراديو نشطاً */
+body.radio-active #playerMushafBtn {
+    display: none !important;
+}    
+      
+      
+      
+      
+      
+      
+     /* تنسيق خاص بحاوية التمرير عند تفعيل الراديو */
+body.radio-active .progress-wrapper {
+    justify-content: space-between; /* يضع الرسالة في جهة والصوت في جهة */
+    max-width: 350px; /* عرض أصغر لأننا لا نحتاج شريط طويل في الراديو */
+    margin: 0 auto;
+}
+
+      
+/* تنسيق رسالة (مباشر / جاري الاتصال) */
+body.radio-active #currTime {
+    font-size: 0.9rem;
+    color: #ef4444; /* لون أحمر للبث المباشر */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: center; /* توسيط النص */
+    text-align: center;
+  padding-right:150px;
+}
+
+/* ضبط أيقونة الدائرة النابضة للمباشر */
+.live-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
+}
+
+/* تأكيد بقاء مؤشر الصوت بجانب التوقيت */
+body.radio-active .volume-area {
+    border-left: 1px solid var(--border);
+    padding-left: 10px;
+} 
+      
+      
+      
     </style>
 </head>
 <body>
@@ -685,7 +774,9 @@ body.radio-active #downloadBtn {
                 <button onclick="resetHadithView()" style="background:none; border:1px solid var(--border); color:var(--primary); padding:5px 15px; border-radius:20px; cursor:pointer;"><i class="fas fa-arrow-right"></i> الكتب</button>
             </div>
             <div id="hadithGrid" class="grid-layout"></div>
-            <div id="hadithLoader" style="text-align: center; padding: 20px; display: none;"><i class="fas fa-circle-notch fa-spin" style="color: var(--primary);"></i> جاري تحميل المزيد...</div>
+ <div id="hadithLoader" style="text-align: center; padding: 20px; display: none;"><i class="fas fa-circle-notch fa-spin" style="color: var(--primary);">
+   
+ </i>...جاري تحميل المزيد</div>
         </div>
       
       
@@ -794,46 +885,46 @@ body.radio-active #downloadBtn {
 
     </div>
 
-    <!-- Player Dock -->
-    <div class="player-dock" id="playerDock">
-        <div class="minimize-btn" onclick="minimizePlayer()"><i class="fas fa-chevron-down"></i></div>
-        
+   <!-- Player Dock المعدل -->
+<div class="player-dock" id="playerDock">
+    <div class="minimize-btn" onclick="minimizePlayer()"><i class="fas fa-chevron-down"></i></div>
+    
+    <div class="player-inner-container">
+        <!-- 1. معلومات السورة والقارئ في خط أفقي واحد بالأعلى -->
         <div class="track-info">
             <div class="track-title" id="pTitle">--</div>
+            <span class="info-separator">•</span>
             <div class="track-artist" id="pArtist">--</div>
         </div>
 
         <div class="controls-area">
+            <!-- 2. منطقة الأزرار في الوسط -->
             <div class="main-controls">
+                <button class="btn-ctrl" id="playerFavBtn" onclick="toggleCurrentTrackFav()"><i class="far fa-heart"></i></button>
+                <button class="btn-ctrl" id="playerMushafBtn" onclick="openSyncMushaf()"><i class="fas fa-book-open"></i></button>
                 <button class="btn-ctrl" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
                 <button class="btn-play" onclick="togglePlayState()" id="playBtn"><i class="fas fa-play"></i></button>
                 <button class="btn-ctrl" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
+                <button class="btn-ctrl" id="downloadBtn" onclick="downloadCurrentTrack()"><i class="fas fa-download"></i></button>
             </div>
-            <div class="progress-wrapper">
+          
+            <!-- 3. شريط التمرير ومؤشر الصوت القصير -->
+            <div class="progress-wrapper">             
                 <span id="currTime">00:00</span>
-                <div class="progress-bar-bg" id="progressBar" onclick="seekAudio(event)"><div class="progress-fill" id="progressFill"></div></div>
+                <div class="progress-bar-bg" id="progressBar" onclick="seekAudio(event)">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
                 <span id="durTime">00:00</span>
-            </div>
-        </div>
 
-        <div class="volume-area">
-          
-          <button class="btn-ctrl" id="playerFavBtn" onclick="toggleCurrentTrackFav()" title="إضافة التلاوة للمفضلة">
-        <i class="far fa-heart"></i>
-    </button>
-          
-            <input type="range" class="volume-slider" style="direction: ltr;" min="0" max="1" step="0.1" value="1" oninput="setVolume(this.value)">
-            <button class="btn-ctrl" style="direction: ltr;" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up"></i></button>
-            <button class="btn-ctrl" onclick="openSyncMushaf()" title="فتح المصحف على التلاوة الحالية" style="margin-right:10px">
-    <i class="fas fa-book-open"></i>
-</button>
-          
-           <button class="btn-ctrl" id="downloadBtn" onclick="downloadCurrentTrack()" title="تحميل السورة">
-        <i class="fas fa-download"></i>
-    </button>
-          
+                <div class="volume-area">
+                    <button class="btn-ctrl" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up"></i></button>
+                    <!-- تقليل طول مؤشر الصوت -->
+                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1" oninput="setVolume(this.value)">
+                </div>
+            </div>
         </div>
     </div>
+</div>
     
    <!-- Restore Player Btn -->
     <div class="restore-player-btn" onclick="restorePlayer()">
@@ -985,10 +1076,10 @@ body.radio-active #downloadBtn {
             
             if (state.playlist && state.playlist.length > state.currentIndex) {
                 const id = state.playlist[state.currentIndex];
-                document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
+                document.getElementById('pTitle').innerHTML = `<span style="opacity:0.7; font-size:0.8em; font-weight:normal;">سورة:</span> ` + SURAH_NAMES[id-1];
                 document.getElementById('pArtist').textContent = state.currentReciter.name;
             }
-        }
+        }  
 
         state.isPlaying = false;
         
@@ -1303,8 +1394,7 @@ function navigate(view) {
     document.getElementById('durTime').style.display = 'none';
     
     const currTime = document.getElementById('currTime');
-    currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> جاري الاتصال...</span>';
-    currTime.style.flex = '1'; currTime.style.textAlign = 'center';
+    currTime.innerHTML = '<span class="live-dot"></span> ... جاري الاتصال ';
 
     audio.src = radio.url;
     audio.play()
@@ -1312,10 +1402,10 @@ function navigate(view) {
             state.isPlaying = true;
             updatePlayerUI();
             setPlayerLoading(false);
-            currTime.innerHTML = '<span style="color:#ef4444; font-weight:bold; letter-spacing:1px;"><i class="fas fa-circle" style="font-size:0.6rem; vertical-align:middle;"></i> مباشر</span>';
+            currTime.innerHTML = '<span class="live-dot"></span> مباشر ';
         })
         .catch(e => { 
-            console.error("خطأ في تشغيل الإذاعة:", e); 
+            console.error("تعذر الاتصال:", e); 
             setPlayerLoading(false); 
         });
 
@@ -1470,7 +1560,7 @@ function navigate(view) {
     // 3. تحديث نصوص الأغنية (اسم السورة والقارئ) وزر القلب
     if(!state.isRadioMode && state.currentIndex !== -1 && state.playlist.length > 0) {
         const id = state.playlist[state.currentIndex];
-        document.getElementById('pTitle').textContent = SURAH_NAMES[id-1];
+       document.getElementById('pTitle').innerHTML = `<span style="opacity:0.7; font-size:0.8em; font-weight:normal;">سورة:</span> ` + SURAH_NAMES[id-1];
         document.getElementById('pArtist').textContent = state.currentReciter.name;
 
         // --- الجزء المضاف لزر القلب في المشغل ---
@@ -2498,7 +2588,7 @@ else if (state.currentView === 'azkar') {
 
     // تغيير شكل الزر لحظياً للتغذية الراجعة
     downloadBtn.innerHTML = '<i class="fas fa-check"></i>';
-    showMushafToast("جاري فتح رابط التحميل...");
+    showMushafToast("...جاري فتح رابط التحميل");
 
     // الطريقة الأضمن: إنشاء رابط بصيغة تطلب من المتصفح التحميل
     const link = document.createElement('a');
