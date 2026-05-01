@@ -1348,50 +1348,58 @@ function navigate(view) {
         try {
             const res = await fetch(API_RADIOS);
             const data = await res.json();
-            state.radios = data.radios.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
-            renderRadios(state.radios);
-        } catch (e) { console.error("Error loading radios:", e); }
-    }
-
-   function renderRadios(list) {
+          
+           // --- تعديل لإزالة التكرار بناءً على الاسم ---
+        const uniqueNames = new Set();
+        const filteredRadios = data.radios.filter(radio => {
+            if (!uniqueNames.has(radio.name)) {
+                uniqueNames.add(radio.name);
+                return true;
+            }
+            return false;
+        });
+          
+          
+            state.radios = filteredRadios.sort((a, b) => a.name.localeCompare(b.name, 'ar'));
+        renderRadios(state.radios);
+    } catch (e) { console.error("Error loading radios:", e); }
+}
+  function renderRadios(list) {
     const grid = document.getElementById('radioGrid');
     grid.innerHTML = '';
     list.forEach((r) => {
-        // نجد الترتيب الحقيقي للإذاعة في المصفوفة الأصلية
+        // نجد الترتيب الحقيقي في المصفوفة الأصلية لضمان عمل النقرة دائماً
         const originalIndex = state.radios.findIndex(item => item.url === r.url);
         
         const d = document.createElement('div'); 
         d.className = 'card';
-        const isF = isFav('radios', r.url) ? 'active' : '';
+        // إضافة خاصية لتمييز البطاقة برقمها الأصلي
+        d.setAttribute('data-radio-idx', originalIndex); 
         
+        const isF = isFav('radios', r.url) ? 'active' : '';
         const heart = `<div class="fav-btn-card ${isF}" onclick='toggleFav(event, "radios", ${JSON.stringify(r)})'><i class="fas fa-heart"></i></div>`;
         
         d.innerHTML = `${heart}<div style="display:flex; justify-content:space-between; align-items:flex-start;"><i class="fa-solid fa-radio" style="color:var(--text-muted);"></i></div><h3 style="margin-top:15px; font-size:1rem;">${r.name}</h3>`;
         
-        // نمرر الترتيب الأصلي هنا
         d.onclick = () => playRadio(originalIndex);
         grid.appendChild(d);
     });
 }
 
  function playRadio(idx) {
-    if (idx === -1) return; // حماية في حال لم يجد العنصر
+    if (idx === -1) return;
     
     activatePlayerUI(); 
     state.isRadioMode = true; 
-    
-    // إخفاء أيقونة التحميل عند تفعيل الراديو
     document.body.classList.add('radio-active');
 
     state.currentIndex = idx;
-    const radio = state.radios[idx]; // الوصول للمصفوفة الكلية
-    
-    audio.pause();
-    audio.src = ""; 
-    audio.load();   
+    const radio = state.radios[idx];
 
-    highlightActiveCard('radioGrid', idx);
+    // إصلاح: لا تقم بعمل load() أو مسح src إلا عند الضرورة القصوى
+    // هذا الترتيب يجعل الاستجابة فورية
     setPlayerLoading(true);
+    highlightActiveCard('radioGrid', idx);
 
     document.getElementById('pTitle').textContent = radio.name;
     document.getElementById('pArtist').textContent = "بث مباشر";
@@ -1401,19 +1409,26 @@ function navigate(view) {
     const currTime = document.getElementById('currTime');
     currTime.innerHTML = '<span class="live-dot"></span> ... جاري الاتصال ';
 
+    // تغيير المصدر والتشغيل مباشرة
     audio.src = radio.url;
-    audio.play()
-        .then(() => {
+    
+    // محاولة التشغيل
+    const playPromise = audio.play();
+
+    if (playPromise !== undefined) {
+        playPromise.then(() => {
             state.isPlaying = true;
             updatePlayerUI();
             setPlayerLoading(false);
             currTime.innerHTML = '<span class="live-dot"></span> مباشر ';
-        })
-        .catch(e => { 
-            console.error("تعذر الاتصال:", e); 
-            setPlayerLoading(false); 
+        }).catch(e => {
+            console.error("Playback error:", e);
+            // في حال فشل البث المباشر (بعض الروابط قد تتعطل مؤقتاً)
+            setPlayerLoading(false);
+            currTime.innerHTML = "تعذر الاتصال بالبث";
         });
-
+    }
+    
     restorePlayer(); 
     savePlayerState(); 
 }
@@ -1524,24 +1539,31 @@ function navigate(view) {
     savePlayerState();
 }
     
-    function highlightActiveCard(gridId, index) {
-        document.querySelectorAll('.card').forEach(c => {
-            c.classList.remove('active-track'); c.classList.remove('playing-state');
-            const indicator = c.querySelector('.playing-indicator'); if(indicator) indicator.remove();
-        });
-        if (index !== -1) {
-            const grid = document.getElementById(gridId);
-            if(grid && grid.children[index]) {
-                const activeCard = grid.children[index];
-                activeCard.classList.add('active-track');
-                if (state.isPlaying) activeCard.classList.add('playing-state');
-                const eq = document.createElement('div'); eq.className = 'playing-indicator';
-                eq.innerHTML = `<i class="fa-solid fa-play"></i><div class="eq-bars"><div class="playing-bar"></div><div class="playing-bar"></div><div class="playing-bar"></div></div>`;
-                activeCard.appendChild(eq);
-            }
-        }
-    }
+      
+   function highlightActiveCard(gridId, index) {
+    document.querySelectorAll('.card').forEach(c => {
+        c.classList.remove('active-track'); 
+        c.classList.remove('playing-state');
+        const indicator = c.querySelector('.playing-indicator'); 
+        if(indicator) indicator.remove();
+    });
 
+    // البحث عن البطاقة التي تحمل الترتيب الصحيح بدلاً من الاعتماد على موقعها في الـ Grid
+    const activeCard = document.querySelector(`[data-radio-idx="${index}"]`) || 
+                       document.querySelectorAll(`#${gridId} .card`)[index];
+
+    if (activeCard) {
+        activeCard.classList.add('active-track');
+        if (state.isPlaying) activeCard.classList.add('playing-state');
+        const eq = document.createElement('div'); 
+        eq.className = 'playing-indicator';
+        eq.innerHTML = `<i class="fa-solid fa-play"></i><div class="eq-bars"><div class="playing-bar"></div><div class="playing-bar"></div><div class="playing-bar"></div></div>`;
+        activeCard.appendChild(eq);
+    }
+}
+
+      
+      
     function togglePlayState() { 
         if(audio.paused) audio.play(); else audio.pause(); 
         state.isPlaying = !audio.paused; 
