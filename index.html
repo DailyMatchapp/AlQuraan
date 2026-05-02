@@ -182,7 +182,8 @@
      gap: 10px;     
 }
       
-        .player-dock.minimized { transform: translateY(150%); pointer-events: none; }
+        .player-dock.minimized { transform: translateY(150%); pointer-events: none; color: var(--primary); }
+      .player-dock.minimized:hover { background: var(--primary); border-color: var(--primary); color: #000; } 
         .player-dock, .restore-player-btn { display: none !important; }
         body.player-active .player-dock { display: flex !important; }
         body.player-active .player-dock.minimized ~ .restore-player-btn { display: flex !important; transform: scale(1); }
