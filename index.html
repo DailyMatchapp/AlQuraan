@@ -1506,6 +1506,11 @@ function navigate(view) {
         });
         updateNoResultsMsg('hadithGrid', !hasVisible);
     }
+        // تفعيل البحث في حصن المسلم
+    else if (state.currentView === 'azkar') {
+        const titles = Object.keys(state.azkarData).filter(t => t.includes(val));
+        renderAzkarIndex(titles);
+    }
 }
      
     function clearSearch() { document.getElementById('searchInput').value = ''; handleSearchInput(); }
@@ -2509,7 +2514,8 @@ function playFavoriteSurah(data) {
       
       
       // === Azkar Logic (Hisn Al-Muslim) ===
-const AZKAR_URL = 'https://raw.githubusercontent.com/rn0x/hisn_almuslim_json/main/hisn_almuslim.json';
+// استخدام بروكسي لضمان جلب البيانات دون حجب
+const AZKAR_URL = "https://api.allorigins.win/raw?url=" + encodeURIComponent("https://raw.githubusercontent.com/rn0x/hisn_almuslim_json/main/hisn_almuslim.json");
 
 async function initAzkar() {
     if (state.azkarData) {
