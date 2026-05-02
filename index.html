@@ -182,8 +182,9 @@
      gap: 10px;     
 }
       
-        .player-dock.minimized { transform: translateY(150%); pointer-events: none; color: var(--primary); }
-      .player-dock.minimized:hover { background: var(--primary); border-color: var(--primary); color: #000; } 
+        .player-dock.minimized { transform: translateY(150%); pointer-events: none; }
+      
+     .minimize-btn:hover { background: var(--primary); border-color: var(--primary); color: #000; } 
         .player-dock, .restore-player-btn { display: none !important; }
         body.player-active .player-dock { display: flex !important; }
         body.player-active .player-dock.minimized ~ .restore-player-btn { display: flex !important; transform: scale(1); }
@@ -227,7 +228,7 @@
         .btn-play.loading::after { content: ""; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin-load 0.8s linear infinite; display: block; }
         @keyframes spin-load { to { transform: rotate(360deg); } }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .minimize-btn { position: absolute; top: -15px; right: 20px; background: var(--bg-card); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; }
+        .minimize-btn { position: absolute; top: -15px; right: 20px; background: var(--bg-card);  color: var(--primary); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; }
         
         .controls-area { 
           width: 100%;
