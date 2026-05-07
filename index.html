@@ -1,4 +1,3 @@
-
   <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -165,13 +164,13 @@
         .card.active-track.playing-state .playing-indicator .fa-play { display: none; }
         .card.active-track.playing-state .playing-indicator .eq-bars { display: flex; }
  
-        .back-to-top { position: fixed; left: 22.5px; bottom: 80px; width: 45px; height: 45px; background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 90; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border); }
+        .back-to-top { position: fixed; left: 22.5px; bottom: 85px; width: 45px; height: 45px; background: rgba(20, 20, 20, 0.9) ; backdrop-filter: blur(10px); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; pointer-events: none; transition: all 0.4s; z-index: 90; box-shadow: 0 5px 15px rgba(0,0,0,0.3); border: 1px solid var(--border); }
         .back-to-top:hover { background: var(--primary); border-color: var(--primary); color: #000; }  
         .back-to-top.show { opacity: 1; pointer-events: all; }
         body.player-active .back-to-top { bottom: 165px; }
         body.player-active.player-minimized .back-to-top { bottom: 85px !important; left: 22px; }
 
-    .player-dock { background: rgba(10, 10, 10, 0.85); position: fixed; bottom: 10px; left: 10px; right: calc(var(--sidebar-width) + 10px); height: auto !important; height: 120px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;  box-sizing: border-box; 
+    .player-dock {  background: rgba(30, 41, 59, 0.6); backdrop-filter: blur(10px); position: fixed; bottom: 10px; left: 10px; right: calc(var(--sidebar-width) + 10px); height: auto !important; height: 120px; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center;  box-sizing: border-box; 
     gap: 12px;padding: 15px 25px; z-index: 100; transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
       
       .player-inner-container {
@@ -191,7 +190,7 @@
       
         .restore-player-btn {
             position: fixed; bottom: 20px; left: 20px; width: 50px; height: 50px; border-radius: 50%;
-            background: rgba(20, 20, 20, 0.9); color: var(--primary);
+            background: rgba(15, 15, 15, 0.95); color: var(--primary);
             backdrop-filter: blur(10px);
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; z-index: 110;
@@ -228,7 +227,7 @@
         .btn-play.loading::after { content: ""; width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin-load 0.8s linear infinite; display: block; }
         @keyframes spin-load { to { transform: rotate(360deg); } }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .minimize-btn { position: absolute; top: -15px; right: 20px; background: var(--bg-card);  color: var(--primary); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; }
+        .minimize-btn { position: absolute; top: -15px; right: 15px; background: var(--bg-card);  color: var(--primary); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); cursor: pointer; font-size: 0.8rem; }
         
         .controls-area { 
           width: 100%;
@@ -236,7 +235,8 @@
           flex-direction: column; 
           align-items: center; 
           gap: 8px; }
-        .main-controls { display: flex; align-items: center; gap: 20px; }
+       
+      
         .btn-ctrl { background: none; border: none; color: var(--text-muted); font-size: 1.1rem; cursor: pointer; transition: 0.2s; }
         .btn-ctrl:hover { color: white; }
         .btn-play { width: 42px; height: 42px; background: var(--primary); color: #000; border-radius: 50%; border:none; cursor: pointer; display:flex; align-items:center; justify-content:center; box-shadow: 0 0 20px var(--primary-glow); }
@@ -250,17 +250,216 @@
     color: var(--border);
     font-size: 1rem;
 }
-        .volume-area { width: 25%; display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+       /* تنسيق الحاوية الرئيسية للأزرار */
+.main-controls {
+    display: flex;
+    justify-content: space-between; /* توزيع المجموعات الثلاث */
+    align-items: center;
+    width: 100%;
+    max-width: 800px; /* تحديد عرض أقصى لراحة العين */
+    margin: 0 auto;
+}
+
+/* جعل المجموعات الجانبية تأخذ مساحة متساوية لضمان توسيط المجموعة الوسطى */
+.ctrl-group {
+    display: flex;
+    align-items: center;
+    flex: 1; /* هذا هو السر: كل جانب يأخذ نفس المساحة */
+}
+
+.group-left {
+    justify-content: flex-start;
+    gap: 15px;;
+}
+
+.group-center {
+    justify-content: center;
+    gap: 25px; /* مسافة أكبر قليلاً لأزرار التحكم الرئيسية */
+    flex: 0 0 auto; /* نمنع المنتصف من التمدد، نتركه يأخذ حجمه الطبيعي فقط */
+    min-width: 180px;
+}
+
+.group-right {
+    justify-content: flex-end;
+    gap: 15px;
+  
+}
+
+/* تعديل مؤشر الصوت ليتناسب مع الحيز الجديد */
+.volume-area {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 135px; /* تثبيت عرض منطقة الصوت بالكامل */
+    justify-content: flex-end;
+  direction:ltr;
+}
+
+
+
+/* تحسينات الموبايل */
+@media (max-width: 768px) {
+    .group-center {
+        gap: 15px;
+        min-width: 150px;
+    }
+    .volume-slider {
+        display: none !important; 
+    }
+   .volume-slider, #volPercent {
+        display: none !important;
+    }
+
+    /* ضبط حاوية الصوت لتناسب الأيقونة فقط */
+    .volume-area {
+        min-width: auto !important; /* إلغاء العرض الثابت الكبير */
+        gap: 0;
+    }
+
+    /* جعل أيقونة الصوت سهلة اللمس في الجوال */
+    .mute-btn-wrapper {
+        width: 40px !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* زر الصوت نفسه */
+    #muteBtn {
+        font-size: 1.1rem; /* تكبير الأيقونة قليلاً لتسهيل الضغط */
       
-        .volume-slider { width: 50px; -webkit-appearance: none; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; outline: none; }
-        .volume-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 12px; border-radius: 50%; background: var(--primary); cursor: pointer; }
+    }
+    .group-left, .group-right {
+        gap: 10px;
+    }
+}
+      
+      .volume-slider {
+    width: 50px !important;
+    -webkit-appearance: none;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+    /* هذا الجزء المسؤول عن تلوين المساحة المختارة */
+    background-image: linear-gradient(var(--primary), var(--primary));
+    background-size: 100% 100%; /* القيمة الافتراضية 100% لأن الصوت يبدأ كاملاً */
+    background-repeat: no-repeat;
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    border: 1.5px solid var(--primary);
+    cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.3);
+}
+
+      
+      body.radio-active .progress-wrapper {
+    justify-content: center !important;
+    width: 100%;
+    margin-top: 5px;
+}
+      body.radio-active #currTime {
+    padding-right: 0;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ef4444;
+    width: 100%;
+    justify-content: center;
+}
+   body.radio-active #progressBar,
+body.radio-active #durTime {
+    display: none !important;
+}
+      
+      /* تحسين شكل مؤشر الصوت في الجوال */
+@media (max-width: 768px) {
+  
+    .main-controls {
+        gap: 8px;
+    }
+}
 
       
       
       
+      
+      @media (max-width: 768px) {
+    /* الحاوية الرئيسية للهيدر - تحويلها لبطاقة أنيقة */
+    .reciter-info-header {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        border-right: 4px solid var(--primary) !important; /* خط جانبي ملون */
+        border-radius: 15px !important;
+        padding: 15px !important;
+        margin: 10px 5px 20px 5px !important;
+        gap: 12px !important;
+        backdrop-filter: blur(10px);
+    }
+
+    /* 1. زر "تغيير القارئ" - يظهر كزر "رجوع" في الأعلى */
+    .reciter-info-header button {
+        order: 1 !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        border: 1px solid rgba(94, 234, 212, 0.3) !important;
+        color: var(--primary) !important;
+        padding: 6px 15px !important;
+        font-size: 0.8rem !important;
+        border-radius: 20px !important;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    /* إضافة أيقونة سهم للزر برمجياً */
+    .reciter-info-header button::before {        
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        font-size: 0.7rem;
+    }
+
+    /* 2. حاوية الاسم والأيقونة */
+    .reciter-info-header div:first-child {
+        order: 2 !important;
+        display: flex !important;
+        flex-direction: row !important; /* الاسم والأيقونة بجانب بعض */
+        align-items: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .reciter-info-header div:first-child i {
+        color: var(--primary) !important;
+        font-size: 1.3rem !important;
+        filter: drop-shadow(0 0 5px var(--primary-glow));
+    }
+
+    #selectedReciterName {
+        font-size: 1.25rem !important;
+        font-weight: 800 !important;
+        color: #fff !important;
+        letter-spacing: -0.5px;
+    }
+
    
       
+}
       
+    
       
       
       
@@ -330,7 +529,7 @@
             .sidebar.active { right: 0; }
             
             .player-dock { left: 10px; right: 10px; bottom: 10px; padding: 12px 15px; height: 120px;  min-height: 140px;}
-            .volume-slider { display: none; }
+           
            .track-info {
         gap: 5px;
     }
@@ -669,11 +868,26 @@ body.radio-active #currTime {
     100% { opacity: 1; transform: scale(1); }
 }
 
-/* تأكيد بقاء مؤشر الصوت بجانب التوقيت */
-body.radio-active .volume-area {
-    border-left: 1px solid var(--border);
-    padding-left: 10px;
-} 
+
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
       
       
       
@@ -893,12 +1107,18 @@ body.radio-active .volume-area {
 
     </div>
 
-   <!-- Player Dock المعدل -->
+  
+  
+  
+  <!-- Player Dock المطور -->
 <div class="player-dock" id="playerDock">
-    <div class="minimize-btn" onclick="minimizePlayer()"><i class="fas fa-chevron-down style='color: var(--primary);' "></i></div>
+  
+
+  
+    <div class="minimize-btn" onclick="minimizePlayer()"><i class="fas fa-chevron-down"></i></div>
     
     <div class="player-inner-container">
-        <!-- 1. معلومات السورة والقارئ في خط أفقي واحد بالأعلى -->
+        <!-- معلومات الملف -->
         <div class="track-info">
             <div class="track-title" id="pTitle">--</div>
             <span class="info-separator">•</span>
@@ -906,33 +1126,53 @@ body.radio-active .volume-area {
         </div>
 
         <div class="controls-area">
-            <!-- 2. منطقة الأزرار في الوسط -->
             <div class="main-controls">
-                <button class="btn-ctrl" id="playerFavBtn" onclick="toggleCurrentTrackFav()"><i class="far fa-heart"></i></button>
-                <button class="btn-ctrl" id="playerMushafBtn" onclick="openSyncMushaf()"><i class="fas fa-book-open"></i></button>
-                <button class="btn-ctrl" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
-                <button class="btn-play" onclick="togglePlayState()" id="playBtn"><i class="fas fa-play"></i></button>
-                <button class="btn-ctrl" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
-                <button class="btn-ctrl" id="downloadBtn" onclick="downloadCurrentTrack()"><i class="fas fa-download"></i></button>
+                <!-- المجموعة اليسرى: المفضلة والمصحف -->
+                <div class="ctrl-group group-left">
+                    <button class="btn-ctrl" id="playerFavBtn" onclick="toggleCurrentTrackFav()"><i class="far fa-heart"></i></button>
+                    <button class="btn-ctrl" id="playerMushafBtn" onclick="openSyncMushaf()"><i class="fas fa-book-open"></i></button>
+                </div>
+                
+                <!-- المجموعة الوسطى: أزرار التشغيل (توسيط مطلق) -->
+                <div class="ctrl-group group-center">
+                    <button class="btn-ctrl" onclick="nextTrack()"><i class="fas fa-step-forward"></i></button>
+                    <button class="btn-play" onclick="togglePlayState()" id="playBtn"><i class="fas fa-play"></i></button>
+                    <button class="btn-ctrl" onclick="prevTrack()"><i class="fas fa-step-backward"></i></button>
+                </div>
+
+                <!-- المجموعة اليمنى: التحميل والصوت -->
+                <div class="ctrl-group group-right">
+                    <button class="btn-ctrl" id="downloadBtn" onclick="downloadCurrentTrack()"><i class="fas fa-download"></i></button>
+                  
+                   <div class="volume-area">
+    <!-- غلاف ثابت العرض للأيقونة لمنع الحركة -->
+    <div class="mute-btn-wrapper" style="width: 30px; display: flex; justify-content: center;">
+        <button class="btn-ctrl" onclick="toggleMute()" id="muteBtn">
+            <i class="fas fa-volume-up"></i>
+        </button>
+    </div>
+    
+    <input type="range" class="volume-slider" id="volSlider" min="0" max="1" step="0.01" value="1" oninput="setVolume(this.value)">
+    
+    <!-- عرض ثابت للنسبة المئوية لمنع التحرك -->
+    <span id="volPercent" style="font-size: 0.7rem; color: var(--text-muted); width: 35px; text-align: left; display: inline-block; font-variant-numeric: tabular-nums;">100%</span>
+</div>
+                </div>
             </div>
           
-            <!-- 3. شريط التمرير ومؤشر الصوت القصير -->
-            <div class="progress-wrapper">             
+            <!-- شريط التوقيت / كلمة مباشر -->
+            <div class="progress-wrapper" id="progressWrapper">             
                 <span id="currTime">00:00</span>
                 <div class="progress-bar-bg" id="progressBar" onclick="seekAudio(event)">
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <span id="durTime">00:00</span>
-
-                <div class="volume-area">
-                    <button class="btn-ctrl" onclick="toggleMute()" id="muteBtn"><i class="fas fa-volume-up"></i></button>
-                    <!-- تقليل طول مؤشر الصوت -->
-                    <input type="range" class="volume-slider" min="0" max="1" step="0.1" value="1" oninput="setVolume(this.value)">
-                </div>
             </div>
         </div>
     </div>
 </div>
+  
+  
     
    <!-- Restore Player Btn -->
     <div class="restore-player-btn" onclick="restorePlayer()">
@@ -1452,6 +1692,32 @@ function navigate(view) {
             clearSearch(); 
         }
     }
+      
+      // دالة مخصصة لإغلاق البحث فقط
+function closeSearch() {
+    const wrapper = document.getElementById('searchWrapper');
+    const topBar = document.querySelector('.top-bar');
+    const searchBtnIcon = document.querySelector('.search-toggle-btn i');
+    
+    if (wrapper.classList.contains('expanded')) {
+        wrapper.classList.remove('expanded');
+        topBar.classList.remove('search-active');
+        searchBtnIcon.className = 'fas fa-search'; // إعادة الأيقونة لشكل العدسة
+        clearSearch(); // مسح نص البحث عند الإغلاق (اختياري)
+    }
+}
+
+// مراقب النقرات على كامل الصفحة
+document.addEventListener('click', function(event) {
+    const wrapper = document.getElementById('searchWrapper');
+    
+    // إذا كان البحث مفتوحاً والنقرة تمت خارج حاوية البحث
+    if (wrapper.classList.contains('expanded') && !wrapper.contains(event.target)) {
+        closeSearch();
+    }
+});
+      
+      
 
     function updateNoResultsMsg(containerId, isEmpty) {
         const container = document.getElementById(containerId);
@@ -1516,33 +1782,48 @@ function navigate(view) {
     function clearSearch() { document.getElementById('searchInput').value = ''; handleSearchInput(); }
 
     // === Player Logic ===
-    function playTrack(idx) {
+   function playTrack(idx) {
     activatePlayerUI(); 
     state.isRadioMode = false; 
     
-    // إظهار أيقونة التحميل عند تشغيل القرآن
+    // إزالة كلاس الراديو لإظهار شريط التقدم وزر التحميل والمصحف
     document.body.classList.remove('radio-active');
 
     state.currentIndex = idx; 
     highlightActiveCard('quranGrid', idx);
     setPlayerLoading(true);
 
+    // --- التحديث المطلوب هنا لبيانات الواجهة ---
     const id = state.playlist[idx];
-    audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
-    
-    audio.play().catch(e => { console.error(e); setPlayerLoading(false); }); 
-    state.isPlaying = true; 
-    
+    const surahName = SURAH_NAMES[id - 1];
+    const reciterName = state.currentReciter.name;
+
+    // تحديث اسم السورة واسم القارئ في المشغل
+    document.getElementById('pTitle').innerHTML = `<span style="opacity:0.7; font-size:0.8em; font-weight:normal;">سورة:</span> ` + surahName;
+    document.getElementById('pArtist').textContent = reciterName;
+    // ----------------------------------------
+
+    // إظهار عناصر التحكم الخاصة بالقرآن (شريط التقدم والوقت)
     document.getElementById('progressBar').style.display = 'block';
     document.getElementById('durTime').style.display = 'block';
     
     const currTime = document.getElementById('currTime');
     currTime.textContent = '00:00';
-    document.getElementById('durTime').textContent = '--:--';
-    currTime.style.flex = '0 0 auto'; currTime.style.textAlign = 'right';
+    currTime.style.flex = '0 0 auto'; 
+    currTime.style.textAlign = 'right';
     document.getElementById('progressFill').style.width = '0%';
 
-    updatePlayerUI();
+    // ضبط رابط الملف والتشغيل
+    audio.src = `${state.currentReciter.moshaf[0].server}${String(id).padStart(3,'0')}.mp3`;
+    
+    audio.play().then(() => {
+        state.isPlaying = true;
+        updatePlayerUI();
+    }).catch(e => { 
+        console.error(e); 
+        setPlayerLoading(false); 
+    }); 
+
     restorePlayer();
     savePlayerState();
 }
@@ -1578,51 +1859,45 @@ function navigate(view) {
         updatePlayerUI(); 
     }
     
-   function updatePlayerUI() {
-    // 1. تحديث شكل زر التشغيل (Play/Pause)
+      
+      
+function updatePlayerUI() {
     if (!document.getElementById('playBtn').classList.contains('loading')) {
         document.getElementById('playBtn').innerHTML = state.isPlaying ? '<i class="fas fa-pause"></i>' : '<i class="fas fa-play"></i>';
     }
 
-    // 2. تحديث حالة الزر العائم (Restore Button)
     const restoreBtn = document.querySelector('.restore-player-btn');
-    if (state.isPlaying) {
-        restoreBtn.classList.add('playing');
-    } else {
-        restoreBtn.classList.remove('playing');
-    }
+    if (state.isPlaying) restoreBtn.classList.add('playing');
+    else restoreBtn.classList.remove('playing');
 
-    // 3. تحديث نصوص الأغنية (اسم السورة والقارئ) وزر القلب
-    if(!state.isRadioMode && state.currentIndex !== -1 && state.playlist.length > 0) {
+    const favBtn = document.getElementById('playerFavBtn');
+    
+    if (state.isRadioMode) {
+        // منطق المفضلة للإذاعات
+        const currentRadio = state.radios[state.currentIndex];
+        const isFavRadio = favorites.radios.some(r => r.url === currentRadio.url);
+        favBtn.innerHTML = isFavRadio ? '<i class="fas fa-heart" style="color:#ef4444"></i>' : '<i class="far fa-heart"></i>';
+        favBtn.style.display = 'inline-block';
+    } else if (state.currentIndex !== -1 && state.playlist.length > 0) {
+        // منطق المفضلة للسور
         const id = state.playlist[state.currentIndex];
-       document.getElementById('pTitle').innerHTML = `<span style="opacity:0.7; font-size:0.8em; font-weight:normal;">سورة:</span> ` + SURAH_NAMES[id-1];
-        document.getElementById('pArtist').textContent = state.currentReciter.name;
-
-        // --- الجزء المضاف لزر القلب في المشغل ---
-        const favBtn = document.getElementById('playerFavBtn'); // تأكد أنك أضفت هذا الـ ID في الـ HTML
-        if (favBtn) {
-            favBtn.style.display = 'inline-block'; // إظهاره في وضع القرآن
-            const trackId = `${state.currentReciter.id}_${id}`; // معرف السورة مع القارئ
-            // فحص هل السورة موجودة في مصفوفة favorites.surahs
-            const isFav = favorites.surahs && favorites.surahs.some(s => s.trackId === trackId);
-            // تغيير شكل القلب
-            favBtn.innerHTML = isFav ? '<i class="fas fa-heart" style="color:#ef4444"></i>' : '<i class="far fa-heart"></i>';
-        }
-        // ---------------------------------------
-
-    } else if (state.isRadioMode) {
-        // إخفاء زر قلب السور عند تشغيل الراديو
-        const favBtn = document.getElementById('playerFavBtn');
-        if (favBtn) favBtn.style.display = 'none';
+        const trackId = `${state.currentReciter.id}_${id}`;
+        const isFavSurah = favorites.surahs.some(s => s.trackId === trackId);
+        favBtn.innerHTML = isFavSurah ? '<i class="fas fa-heart" style="color:#ef4444"></i>' : '<i class="far fa-heart"></i>';
+        favBtn.style.display = 'inline-block';
     }
 
-    // 4. تحديث حالة البطاقة النشطة في الشبكة (Grid)
+    // تحديث حالة البطاقة النشطة
     const activeCard = document.querySelector('.card.active-track');
     if (activeCard) {
         if (state.isPlaying) activeCard.classList.add('playing-state'); 
         else activeCard.classList.remove('playing-state');
     }
-}
+}   
+      
+      
+      
+      
 
     function minimizePlayer() { 
         document.getElementById('playerDock').classList.add('minimized'); 
@@ -1634,11 +1909,45 @@ function navigate(view) {
         document.body.classList.remove('player-minimized'); 
     }
     
-    function setVolume(val) { audio.volume = val; }
-    function toggleMute() { 
-        audio.muted = !audio.muted; 
-        document.getElementById('muteBtn').innerHTML = audio.muted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>'; 
+    function setVolume(val) {
+    // 1. تحديث مستوى صوت المشغل
+    audio.volume = val;
+    
+    const volSlider = document.getElementById('volSlider');
+    const volPercent = document.getElementById('volPercent');
+    const muteBtn = document.getElementById('muteBtn');
+
+    // 2. تحديث النسبة المئوية نصياً
+    const percent = Math.round(val * 100);
+    volPercent.textContent = percent + '%';
+
+    // 3. تحديث لون الشريط (الجزء المختار)
+    volSlider.style.backgroundSize = (val * 100) + '% 100%';
+
+    // 4. تحديث أيقونة الصوت بناءً على المستوى
+    if (val == 0) {
+        muteBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+    } else if (val < 0.5) {
+        muteBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
+    } else {
+        muteBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
     }
+}
+      
+      
+   function toggleMute() {
+    audio.muted = !audio.muted;
+    const volSlider = document.getElementById('volSlider');
+    
+    if (audio.muted) {
+        document.getElementById('muteBtn').innerHTML = '<i class="fas fa-volume-mute"></i>';
+        document.getElementById('volPercent').textContent = '0%';
+        volSlider.style.backgroundSize = '0% 100%';
+    } else {
+        // إعادة القيم بناءً على مستوى الصوت الفعلي قبل الكتم
+        setVolume(audio.volume);
+    }
+}
 
     function nextTrack() { 
         if(state.isRadioMode) {
@@ -2453,33 +2762,40 @@ function playRadioDirect(radioItem) {
       
       
       
-      function toggleCurrentTrackFav() {
-    if (state.isRadioMode || !state.currentReciter || state.currentIndex === -1) return;
-
-    const surahId = state.playlist[state.currentIndex];
-    const trackId = `${state.currentReciter.id}_${surahId}`; // معرف فريد (رقم القارئ + رقم السورة)
-
-    const idx = favorites.surahs.findIndex(s => s.trackId === trackId);
-    
-    if (idx === -1) {
-        // إضافة للمفضلة
-        const trackData = {
-            trackId: trackId,
-            surahId: surahId,
-            surahName: SURAH_NAMES[surahId - 1],
-            reciter: state.currentReciter,
-            rewaya: state.currentReciter.moshaf[0].name
-        };
-        favorites.surahs.push(trackData);
-        showMushafToast("تمت الإضافة للمفضلة");
-    } else {
-        // حذف من المفضلة
-        favorites.surahs.splice(idx, 1);
-        showMushafToast("تم الحذف من المفضلة");
+    function toggleCurrentTrackFav() {
+    if (state.isRadioMode) {
+        // إضافة/حذف الإذاعة من المفضلة
+        const radio = state.radios[state.currentIndex];
+        const idx = favorites.radios.findIndex(r => r.url === radio.url);
+        if (idx === -1) {
+            favorites.radios.push(radio);
+            showMushafToast("تمت إضافة الإذاعة للمفضلة");
+        } else {
+            favorites.radios.splice(idx, 1);
+            showMushafToast("تم حذف الإذاعة من المفضلة");
+        }
+        localStorage.setItem('fav_radios', JSON.stringify(favorites.radios));
+    } else if (state.currentReciter && state.currentIndex !== -1) {
+        // إضافة/حذف السورة من المفضلة
+        const surahId = state.playlist[state.currentIndex];
+        const trackId = `${state.currentReciter.id}_${surahId}`;
+        const idx = favorites.surahs.findIndex(s => s.trackId === trackId);
+        if (idx === -1) {
+            favorites.surahs.push({
+                trackId: trackId,
+                surahId: surahId,
+                surahName: SURAH_NAMES[surahId - 1],
+                reciter: state.currentReciter,
+                rewaya: state.currentReciter.moshaf[0].name
+            });
+            showMushafToast("تمت إضافة السورة للمفضلة");
+        } else {
+            favorites.surahs.splice(idx, 1);
+            showMushafToast("تم حذف السورة من المفضلة");
+        }
+        localStorage.setItem('fav_surahs', JSON.stringify(favorites.surahs));
     }
-
-    localStorage.setItem('fav_surahs', JSON.stringify(favorites.surahs));
-    updatePlayerUI(); // لتحديث شكل القلب
+    updatePlayerUI();
 }
       
       
