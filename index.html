@@ -905,9 +905,22 @@ body.radio-active #currTime {
       
       
       
+      #mushaf-status {
+    position: fixed;
+    top: 85px; /* لكي لا يغطي على شريط البحث */
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 25px;
+    border-radius: 50px;
+    z-index: 9999;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    text-align: center;
+    min-width: 250px;
+}
       
-      
-    </style>
+    </style> 
 </head>
 <body>
 
@@ -3056,7 +3069,82 @@ function applyScrollReveal() {
       
       
       
-      
+      // --- منطق مراقبة الاتصال بالإنترنت وإعادة التشغيل التلقائي ---
+
+let wasPlayingBeforeOffline = false;
+let lastTimeBeforeOffline = 0;
+let lastSrcBeforeOffline = "";
+
+// دالة محسنة لإظهار التنبيهات بألوان مختلفة
+function showStatusToast(text, type = 'info') {
+    const el = document.getElementById('mushaf-status');
+    el.innerText = text;
+    el.style.display = 'block';
+    
+    // تغيير اللون بناءً على الحالة
+    if (type === 'error') {
+        el.style.backgroundColor = '#ef4444'; // أحمر
+        el.style.color = 'white';
+    } else if (type === 'success') {
+        el.style.backgroundColor = '#10b981'; // أخضر
+        el.style.color = 'white';
+    } else {
+        el.style.backgroundColor = 'var(--primary)'; // اللون الافتراضي (تيفاني)
+        el.style.color = 'black';
+    }
+
+    // إخفاء التنبيه بعد 4 ثواني
+    setTimeout(() => {
+        el.style.display = 'none';
+    }, 4000);
+}
+
+// مراقب انقطاع الإنترنت
+window.addEventListener('offline', () => {
+    showStatusToast("⚠️ انقطع الاتصال بالإنترنت ", 'error');
+    
+    // إذا كان هناك صوت يعمل، احفظ مكانه وتوقف
+    if (!audio.paused) {
+        wasPlayingBeforeOffline = true;
+        lastTimeBeforeOffline = audio.currentTime;
+        lastSrcBeforeOffline = audio.src;
+        audio.pause();
+        state.isPlaying = false;
+        updatePlayerUI();
+    }
+});
+
+// مراقب عودة الإنترنت
+window.addEventListener('online', () => {
+    showStatusToast("✅ عاد الاتصال بالإنترنت. جاري استعادة التشغيل...", 'success');
+    
+    // إذا كان المشغل يعمل قبل الانقطاع، أعد تحميله
+    if (wasPlayingBeforeOffline && lastSrcBeforeOffline) {
+        setPlayerLoading(true);
+        
+        // إعادة تعيين المصدر لضمان التحديث من السيرفر
+        audio.src = lastSrcBeforeOffline;
+        audio.load();
+        
+        // محاولة التشغيل من نقطة التوقف
+        audio.addEventListener('canplay', function onCanPlay() {
+            audio.currentTime = lastTimeBeforeOffline;
+            audio.play().then(() => {
+                state.isPlaying = true;
+                updatePlayerUI();
+                setPlayerLoading(false);
+            }).catch(e => {
+                console.log("فشل الاستئناف التلقائي:", e);
+                setPlayerLoading(false);
+            });
+            
+            // إزالة المستمع لكي لا يتكرر
+            audio.removeEventListener('canplay', onCanPlay);
+        });
+        
+        wasPlayingBeforeOffline = false; // إعادة ضبط الحالة
+    }
+});
     </script>
 </body>
 </html>
