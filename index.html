@@ -946,7 +946,8 @@ body.radio-active #currTime {
       
       
       /* إخفاء زر المصحف وزر التحميل عند تفعيل الأذكار */
-body.azkar-active #playerMushafBtn {
+body.azkar-active #playerMushafBtn,
+     body.azkar-active #playerFavBtn{
     display: none !important;
 }
       
@@ -2213,63 +2214,79 @@ body.azkar-active #playerMushafBtn {
     }
 
     // === Navigation ===
-function navigate(view) {
-    // 1. تحديث حالة الروابط في القائمة الجانبية
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+function navigate(view, el = null) {
+    // 1. تحديث الحالة النشطة في القائمة الجانبية بشكل آمن
+    document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
     
-    // تفعيل العنصر فقط إذا تم النقر عليه من القائمة الجانبية
-    if(event && event.currentTarget && event.currentTarget.classList.contains('nav-item')) {
-        event.currentTarget.classList.add('active');
+    // إذا مررنا العنصر مباشرة أو حاولنا إيجاده
+    if (el) {
+        el.classList.add('active');
+    } else {
+        // البحث عن العنصر الذي يحتوي على نفس اسم الصفحة لتفعيله
+        const items = document.querySelectorAll('.nav-item');
+        items.forEach(item => {
+            if (item.getAttribute('onclick') && item.getAttribute('onclick').includes(`'${view}'`)) {
+                item.classList.add('active');
+            }
+        });
     }
 
-    // 2. إخفاء جميع الواجهات
-    document.querySelectorAll('.content-view').forEach(el => el.classList.remove('active'));
+    // 2. إغلاق القائمة الجانبية فوراً في الجوال لتجنب "التعليق"
+    const sidebar = document.getElementById('sidebar');
+    if (window.innerWidth <= 768 && sidebar.classList.contains('active')) {
+        toggleSidebar();
+    }
+
+    // 3. إخفاء جميع الواجهات وإغلاق المصحف
+    document.querySelectorAll('.content-view').forEach(v => v.classList.remove('active'));
     document.getElementById('mushafOverlay').classList.remove('active');
 
-    // 3. إدارة شريط البحث (إخفاء/إظهار)
+    // 4. إدارة شريط البحث
     const searchWrapper = document.getElementById('searchWrapper');
     const noSearchViews = ['prayer', 'asma', 'favorites']; 
-    
     if (noSearchViews.includes(view)) {
         searchWrapper.style.display = 'none';
-        searchWrapper.classList.remove('expanded');
-        document.querySelector('.top-bar').classList.remove('search-active');
-        clearSearch();
     } else {
         searchWrapper.style.display = 'flex';
     }
 
-    // 4. تفعيل الواجهة المطلوبة وتحديث العناوين
-    if (view !== 'mushaf') {
-        document.getElementById(view + 'View').classList.add('active');
+    // 5. تفعيل الواجهة المطلوبة وتحديث المحتوى
+    const targetView = document.getElementById(view + 'View');
+    if (targetView) {
+        targetView.classList.add('active');
         const h = document.getElementById('pageHeader');
-        
-        if(view === 'quran') h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
-        else if(view === 'hadith') h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
-        else if(view === 'radio') { h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر</p>'; initRadios(); }
-        else if(view === 'prayer') h.innerHTML = '<h2>مواقيت الصلاة</h2><p>كتاباً موقوتاً</p>';
-       else if(view === 'asma') { 
-    h.innerHTML = '<h2>أسماء الله الحسنى</h2><p>وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>'; 
-    initAsma(); // استدعاء الدالة لجلب البيانات
-}
-        else if(view === 'favorites') {
+
+        if (view === 'quran') {
+            h.innerHTML = '<h2>القرآن الكريم</h2><p>استمع لأعذب التلاوات</p>';
+            // إعادة ضبط عرض القرآن ليظهر القراء بدلاً من السور إذا كان عالقاً
+            if (typeof resetQuranView === 'function') resetQuranView();
+        } 
+        else if (view === 'hadith') {
+            h.innerHTML = '<h2>الحديث الشريف</h2><p>كتب السنة النبوية</p>';
+            if (typeof resetHadithView === 'function') resetHadithView();
+        } 
+        else if (view === 'radio') {
+            h.innerHTML = '<h2>إذاعات القرآن</h2><p>بث مباشر</p>';
+            initRadios();
+        } 
+        else if (view === 'prayer') {
+            h.innerHTML = '<h2>مواقيت الصلاة</h2><p>كتاباً موقوتاً</p>';
+        } 
+        else if (view === 'asma') {
+            h.innerHTML = '<h2>أسماء الله الحسنى</h2><p>وَلِلَّهِ الْأَسْمَاءُ الْحُسْنَىٰ فَادْعُوهُ بِهَا</p>';
+            initAsma();
+        } 
+        else if (view === 'favorites') {
             h.innerHTML = '<h2>المفضلة</h2><p>ما تم حفظه للوصول السريع</p>';
-            renderFavoritesGrid(); 
+            renderFavoritesGrid();
+        } 
+        else if (view === 'azkar') {
+            h.innerHTML = '<h2>حصن المسلم</h2><p>من أذكار الكتاب والسنة</p>';
+            initAzkar();
         }
         
-    
-        else if(view === 'azkar') { 
-            h.innerHTML = '<h2>حصن المسلم</h2><p>من أذكار الكتاب والسنة</p>'; 
-            initAzkar(); 
-        }
-      
         state.currentView = view;
-    }
-    
-    // 5. التعديل الهام: إغلاق القائمة الجانبية فقط إذا كانت مفتوحة بالفعل (على الجوال)
-    const sidebar = document.getElementById('sidebar');
-    if(window.innerWidth <= 768 && sidebar.classList.contains('active')) {
-        toggleSidebar();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
       
