@@ -905,25 +905,47 @@ body.radio-active #currTime {
       
       
       
-      #mushaf-status {
+  #mushaf-status {
     position: fixed;
-    top: 85px; /* لكي لا يغطي على شريط البحث */
+    top: 30px;
     left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 25px;
-    border-radius: 50px;
-    z-index: 9999;
-    font-weight: 600;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    transition: all 0.3s ease;
+    transform: translateX(-50%) translateY(-20px);
+    
+    /* الخلفية الزجاجية المطلوبة */
+    background: rgba(30, 41, 59, 0.7) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    
+    /* لون النص أبيض دائماً ليتناسب مع الخلفية الداكنة */
+    color: #ffffff !important;
+    padding: 12px 35px;
+    border-radius: 20px;
+    z-index: 100000;
+    font-weight: 700;
     text-align: center;
-    min-width: 250px;
+    min-width: 300px;
+    
+    /* إطار افتراضي شفاف قليلاً */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+    
+    display: none;
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* حركة الظهور */
+#mushaf-status.show {
+    display: block;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
 }
       
     </style> 
 </head>
 <body>
-
+<div id="mushaf-status" style="position:fixed; top:80px; left:50%; transform:translateX(-50%); background:var(--primary); color:black; padding:5px 15px; border-radius:20px; z-index:9999; display:none;"></div>
+  
     <div class="leonardo-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -3069,80 +3091,88 @@ function applyScrollReveal() {
       
       
       
-      // --- منطق مراقبة الاتصال بالإنترنت وإعادة التشغيل التلقائي ---
-
-let wasPlayingBeforeOffline = false;
-let lastTimeBeforeOffline = 0;
-let lastSrcBeforeOffline = "";
-
-// دالة محسنة لإظهار التنبيهات بألوان مختلفة
-function showStatusToast(text, type = 'info') {
+      
+      
+      
+      
+      
+      
+      
+ 
+      
+    // دالة موحدة لإظهار التنبيهات بتصميم زجاجي
+function showGlobalToast(text, type = "info") {
     const el = document.getElementById('mushaf-status');
-    el.innerText = text;
-    el.style.display = 'block';
+    if(!el) return;
     
-    // تغيير اللون بناءً على الحالة
-    if (type === 'error') {
-        el.style.backgroundColor = '#ef4444'; // أحمر
-        el.style.color = 'white';
-    } else if (type === 'success') {
-        el.style.backgroundColor = '#10b981'; // أخضر
-        el.style.color = 'white';
+    el.innerText = text;
+
+    // تحديد ألوان الإطار والتوهج بناءً على النوع (نجاح أو خطأ)
+    let borderColor, glowColor;
+    
+    if (type === "error") {
+        borderColor = "#ef4444"; // أحمر
+        glowColor = "rgba(239, 68, 68, 0.3)";
+    } else if (type === "success") {
+        borderColor = "#10b981"; // أخضر
+        glowColor = "rgba(16, 185, 129, 0.3)";
     } else {
-        el.style.backgroundColor = 'var(--primary)'; // اللون الافتراضي (تيفاني)
-        el.style.color = 'black';
+        borderColor = "var(--primary)"; // اللون الافتراضي (تيل)
+        glowColor = "rgba(94, 234, 212, 0.3)";
     }
 
-    // إخفاء التنبيه بعد 4 ثواني
+    // تطبيق التنسيقات الديناميكية
+    el.style.borderColor = borderColor;
+    el.style.boxShadow = `0 10px 30px ${glowColor}`;
+    
+    // إظهار العنصر
+    el.classList.add('show');
+    el.style.display = 'block';
+    
+    // إخفاء التنبيه بعد 4 ثوانٍ
     setTimeout(() => {
-        el.style.display = 'none';
-    }, 4000);
+        el.classList.remove('show');
+        setTimeout(() => { el.style.display = 'none'; }, 400);
+    }, 6000);
 }
 
-// مراقب انقطاع الإنترنت
+// متغيرات حالة الإنترنت
+let offlineTrackTime = 0;
+let offlineTrackSrc = "";
+let wasPlayingBeforeDisconnect = false;
+
 window.addEventListener('offline', () => {
-    showStatusToast("⚠️ انقطع الاتصال بالإنترنت ", 'error');
+    // نمرر "error" لتغيير لون الإطار للأحمر
+    showGlobalToast("⚠️ انقطع الاتصال بالإنترنت!", "error");
     
-    // إذا كان هناك صوت يعمل، احفظ مكانه وتوقف
     if (!audio.paused) {
-        wasPlayingBeforeOffline = true;
-        lastTimeBeforeOffline = audio.currentTime;
-        lastSrcBeforeOffline = audio.src;
+        wasPlayingBeforeDisconnect = true;
+        offlineTrackTime = audio.currentTime;
+        offlineTrackSrc = audio.src;
         audio.pause();
         state.isPlaying = false;
         updatePlayerUI();
     }
 });
 
-// مراقب عودة الإنترنت
 window.addEventListener('online', () => {
-    showStatusToast("✅ عاد الاتصال بالإنترنت. جاري استعادة التشغيل...", 'success');
+    // نمرر "success" لتغيير لون الإطار للأخضر
+    showGlobalToast("✅ تم الاتصال بالإنترنت", "success");
     
-    // إذا كان المشغل يعمل قبل الانقطاع، أعد تحميله
-    if (wasPlayingBeforeOffline && lastSrcBeforeOffline) {
-        setPlayerLoading(true);
-        
-        // إعادة تعيين المصدر لضمان التحديث من السيرفر
-        audio.src = lastSrcBeforeOffline;
+    if (wasPlayingBeforeDisconnect && offlineTrackSrc) {
+        audio.src = offlineTrackSrc;
         audio.load();
         
-        // محاولة التشغيل من نقطة التوقف
-        audio.addEventListener('canplay', function onCanPlay() {
-            audio.currentTime = lastTimeBeforeOffline;
+        const resumeAction = () => {
+            audio.currentTime = offlineTrackTime;
             audio.play().then(() => {
                 state.isPlaying = true;
                 updatePlayerUI();
-                setPlayerLoading(false);
-            }).catch(e => {
-                console.log("فشل الاستئناف التلقائي:", e);
-                setPlayerLoading(false);
             });
-            
-            // إزالة المستمع لكي لا يتكرر
-            audio.removeEventListener('canplay', onCanPlay);
-        });
-        
-        wasPlayingBeforeOffline = false; // إعادة ضبط الحالة
+            audio.removeEventListener('canplaythrough', resumeAction);
+        };
+        audio.addEventListener('canplaythrough', resumeAction);
+        wasPlayingBeforeDisconnect = false;
     }
 });
     </script>
