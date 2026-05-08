@@ -941,6 +941,15 @@ body.radio-active #currTime {
     transform: translateX(-50%) translateY(0);
 }
       
+      
+      
+      
+      
+      /* إخفاء زر المصحف وزر التحميل عند تفعيل الأذكار */
+body.azkar-active #playerMushafBtn {
+    display: none !important;
+}
+      
     </style> 
 </head>
 <body>
@@ -2087,6 +2096,7 @@ body.radio-active #currTime {
     let state = {
         reciters: [], currentReciter: null, playlist: [], currentIndex: -1, 
         radios: [], isRadioMode: false,
+       isAzkarMode: false,
         isPlaying: false,
         currentView: 'reciters',
         hadithBookId: null, hadithPage: 1, hadithLoading: false, hadithTotalLoaded: 0,
@@ -2476,7 +2486,9 @@ function navigate(view) {
     
     activatePlayerUI(); 
     state.isRadioMode = true; 
+    state.isAzkarMode = false;
     document.body.classList.add('radio-active');
+    document.body.classList.remove('azkar-active');
 
     state.currentIndex = idx;
     const radio = state.radios[idx];
@@ -2628,9 +2640,11 @@ document.addEventListener('click', function(event) {
    function playTrack(idx) {
     activatePlayerUI(); 
     state.isRadioMode = false; 
+    state.isAzkarMode = false; // تعطيل وضع الأذكار
     
     // إزالة كلاس الراديو لإظهار شريط التقدم وزر التحميل والمصحف
     document.body.classList.remove('radio-active');
+      document.body.classList.remove('azkar-active');
 
     state.currentIndex = idx; 
     highlightActiveCard('quranGrid', idx);
@@ -2793,20 +2807,34 @@ function updatePlayerUI() {
 }
 
     function nextTrack() { 
-        if(state.isRadioMode) {
-            if(state.currentIndex < state.radios.length - 1) playRadio(state.currentIndex + 1);
-        } else {
-            if(state.currentIndex < state.playlist.length - 1) playTrack(state.currentIndex + 1); 
+    if(state.isRadioMode) {
+        if(state.currentIndex < state.radios.length - 1) playRadio(state.currentIndex + 1);
+    } else if(state.isAzkarMode) {
+        // التنقل بين الأذكار
+        if(state.currentIndex < HISN_DATA_STATIC.length - 1) {
+            const nextIdx = state.currentIndex + 1;
+            playAzkarAudio(HISN_DATA_STATIC[nextIdx], nextIdx);
         }
+    } else {
+        // وضع القرآن
+        if(state.currentIndex < state.playlist.length - 1) playTrack(state.currentIndex + 1); 
     }
+}
 
-    function prevTrack() { 
-        if(state.isRadioMode) {
-            if(state.currentIndex > 0) playRadio(state.currentIndex - 1);
-        } else {
-            if(state.currentIndex > 0) playTrack(state.currentIndex - 1); 
+  function prevTrack() { 
+    if(state.isRadioMode) {
+        if(state.currentIndex > 0) playRadio(state.currentIndex - 1);
+    } else if(state.isAzkarMode) {
+        // التنقل بين الأذكار للخلف
+        if(state.currentIndex > 0) {
+            const prevIdx = state.currentIndex - 1;
+            playAzkarAudio(HISN_DATA_STATIC[prevIdx], prevIdx);
         }
+    } else {
+        // وضع القرآن
+        if(state.currentIndex > 0) playTrack(state.currentIndex - 1); 
     }
+}
 
     audio.addEventListener('loadstart', () => setPlayerLoading(true));
     audio.addEventListener('waiting', () => setPlayerLoading(true));
@@ -3570,6 +3598,7 @@ function playRadioDirect(radioItem) {
     
     // إخفاء أيقونة التحميل عند تفعيل الراديو من المفضلة
     document.body.classList.add('radio-active');
+    document.body.classList.remove('azkar-active');
 
     // إيقاف وتفريغ تماماً
     audio.pause();
@@ -3718,7 +3747,12 @@ function initAzkar() {
       
     function playAzkarAudio(item, index) {
     activatePlayerUI();
-    state.isRadioMode = false;
+     state.isRadioMode = false;
+    state.isAzkarMode = true; 
+    state.currentIndex = index;
+    state.playlist = HISN_DATA_STATIC;
+      
+      document.body.classList.add('azkar-active');
     document.body.classList.remove('radio-active');
 
     document.getElementById('pTitle').textContent = item.TITLE;
