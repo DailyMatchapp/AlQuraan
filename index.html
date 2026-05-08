@@ -963,7 +963,7 @@ body.radio-active #currTime {
         </div>
         <nav class="nav-links">
           <div class="nav-item" onclick="navigate('favorites')"><i class="fas fa-heart"></i> المفضلة</div>
-            <div class="nav-item active" onclick="navigate('quran')"><i class="fas fa-headphones-alt"></i> القرآن الكريم</div>
+            <div class="nav-item active" onclick="navigate('quran')"><i class="fas fa-headphones-alt"></i> القرآن الكريم </div>
             <div class="nav-item" onclick="navigate('radio')"><i class="fas fa-radio"></i> الإذاعات</div> 
             <div class="nav-item" onclick="openMushafOverlay()"><i class="fas fa-book-open"></i> المصحف الشريف</div>
             <div class="nav-item" onclick="navigate('hadith')"><i class="fas fa-book-reader"></i> الحديث الشريف</div>
@@ -1055,8 +1055,8 @@ body.radio-active #currTime {
       
       <div id="favoritesView" class="content-view" onscroll="checkScroll(this)">
     <div class="fav-tabs-container">
-        <div class="fav-tab active" onclick="switchFavTab('quran')">القرآن الكريم</div>
-       <div class="fav-tab" onclick="switchFavTab('surahs')">السور المختارة</div>
+        <div class="fav-tab active" onclick="switchFavTab('quran')">القراء</div>
+       <div class="fav-tab" onclick="switchFavTab('surahs')">السور </div>
         <div class="fav-tab" onclick="switchFavTab('radio')">الإذاعات</div>
         <div class="fav-tab" onclick="switchFavTab('hadith')">الأحاديث</div>
     </div>
@@ -1462,10 +1462,10 @@ function navigate(view) {
 }
         else if(view === 'favorites') {
             h.innerHTML = '<h2>المفضلة</h2><p>ما تم حفظه للوصول السريع</p>';
-            renderFavoritesGrid(); // إعادة تحميل الشبكة للتأكد من التحديث
+            renderFavoritesGrid(); 
         }
         
-      // 👇 هنا تضع الكود الجديد الخاص بحصن المسلم 👇
+    
         else if(view === 'azkar') { 
             h.innerHTML = '<h2>حصن المسلم</h2><p>من أذكار الكتاب والسنة</p>'; 
             initAzkar(); 
