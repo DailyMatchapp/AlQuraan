@@ -2631,6 +2631,10 @@ document.addEventListener('click', function(event) {
         const filtered = state.radios.filter(r => r.name.includes(val));
         renderRadios(filtered); 
         updateNoResultsMsg('radioGrid', filtered.length === 0);
+    }  else if (state.currentView === 'azkar') {
+        const filtered = HISN_DATA_STATIC.filter(item => item.TITLE.includes(val));
+        renderAzkarGridItems(filtered);
+        updateNoResultsMsg('azkarGrid', filtered.length === 0);
     } else if (state.currentView === 'hadithList') {
         let hasVisible = false;
         document.querySelectorAll('#hadithGrid .card').forEach(c => {
@@ -2702,6 +2706,51 @@ document.addEventListener('click', function(event) {
     savePlayerState();
 }
     
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      function renderAzkarGridItems(list) {
+    const grid = document.getElementById('azkarGrid');
+    grid.innerHTML = '';
+    
+    list.forEach((item, index) => {
+        // نحدد الترتيب الحقيقي في المصفوفة الأصلية لضمان عمل التشغيل بشكل صحيح
+        const originalIndex = HISN_DATA_STATIC.findIndex(h => h.ID === item.ID);
+        
+        const card = document.createElement('div');
+        card.className = 'card';
+        // إضافة سمة للتعرف على الترتيب الأصلي عند التشغيل
+        card.setAttribute('data-azkar-idx', originalIndex);
+
+        card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <i class="fas fa-pray" style="color:var(--text-muted);"></i>
+                <span style="font-size: 0.7rem; color: var(--primary); background: rgba(94, 234, 212, 0.1); padding: 2px 8px; border-radius: 10px;">${item.ID}</span>
+            </div>
+            <h3 style="margin-top:15px; font-size:1rem; min-height: 50px;">${item.TITLE}</h3>
+            <p style="font-size:0.8rem; color:var(--text-muted);">أذكار صوتية</p>
+            
+            <div class="playing-indicator">
+                <i class="fa-solid fa-play"></i>
+                <div class="eq-bars">
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                </div>
+            </div>
+        `;
+
+        card.onclick = () => playAzkarAudio(item, originalIndex);
+        grid.appendChild(card);
+    });
+}
+      
       
    function highlightActiveCard(gridId, index) {
     document.querySelectorAll('.card').forEach(c => {
@@ -3725,7 +3774,8 @@ function initAzkar() {
     
     // استخدام البيانات الثابتة مباشرة
     state.hisnData = HISN_DATA_STATIC;
-    
+    renderAzkarGridItems(state.hisnData);
+  
     // مسح محتوى الشبكة وعرض الأذكار
     grid.innerHTML = '';
     
