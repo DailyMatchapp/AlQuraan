@@ -2715,18 +2715,17 @@ document.addEventListener('click', function(event) {
       
       
       
-      function renderAzkarGridItems(list) {
+   function renderAzkarGridItems(list) {
     const grid = document.getElementById('azkarGrid');
     grid.innerHTML = '';
     
-    list.forEach((item, index) => {
-        // نحدد الترتيب الحقيقي في المصفوفة الأصلية لضمان عمل التشغيل بشكل صحيح
+    list.forEach((item) => {
+        // تحديد الترتيب الحقيقي للذكر في المصفوفة الأصلية
         const originalIndex = HISN_DATA_STATIC.findIndex(h => h.ID === item.ID);
         
         const card = document.createElement('div');
         card.className = 'card';
-        // إضافة سمة للتعرف على الترتيب الأصلي عند التشغيل
-        card.setAttribute('data-azkar-idx', originalIndex);
+        card.setAttribute('data-azkar-idx', originalIndex); // ضروري جداً للتلوين
 
         card.innerHTML = `
             <div style="display:flex; justify-content:space-between; align-items:flex-start;">
@@ -2735,24 +2734,23 @@ document.addEventListener('click', function(event) {
             </div>
             <h3 style="margin-top:15px; font-size:1rem; min-height: 50px;">${item.TITLE}</h3>
             <p style="font-size:0.8rem; color:var(--text-muted);">أذكار صوتية</p>
-            
-            <div class="playing-indicator">
-                <i class="fa-solid fa-play"></i>
-                <div class="eq-bars">
-                    <div class="playing-bar"></div>
-                    <div class="playing-bar"></div>
-                    <div class="playing-bar"></div>
-                </div>
-            </div>
+            <div class="playing-indicator"></div>
         `;
 
         card.onclick = () => playAzkarAudio(item, originalIndex);
         grid.appendChild(card);
     });
+
+    // سطر جوهري: إذا كنت في وضع الأذكار وهذا الذكر يعمل، لونه فوراً بعد الرسم
+    if (state.isAzkarMode && state.currentIndex !== -1) {
+        highlightActiveCard('azkarGrid', state.currentIndex);
+    }
 }
       
       
-   function highlightActiveCard(gridId, index) {
+      
+      function applyAzkarHighlight(index) {
+    // 1. مسح التلوين القديم من جميع البطاقات
     document.querySelectorAll('.card').forEach(c => {
         c.classList.remove('active-track'); 
         c.classList.remove('playing-state');
@@ -2760,17 +2758,55 @@ document.addEventListener('click', function(event) {
         if(indicator) indicator.remove();
     });
 
-    // البحث عن البطاقة التي تحمل الترتيب الصحيح بدلاً من الاعتماد على موقعها في الـ Grid
-    const activeCard = document.querySelector(`[data-radio-idx="${index}"]`) || 
+    // 2. البحث عن البطاقة التي تحمل الرقم التسلسلي الحالي
+    const activeCard = document.querySelector(`[data-azkar-idx="${index}"]`);
+
+    if (activeCard) {
+        activeCard.classList.add('active-track');
+        if (state.isPlaying) activeCard.classList.add('playing-state');
+        
+        // 3. إضافة مؤشر الصوت المتحرك (Equalizer)
+        const eq = document.createElement('div'); 
+        eq.className = 'playing-indicator';
+        eq.innerHTML = `
+            <i class="fa-solid fa-play"></i>
+            <div class="eq-bars">
+                <div class="playing-bar"></div>
+                <div class="playing-bar"></div>
+                <div class="playing-bar"></div>
+            </div>`;
+        activeCard.appendChild(eq);
+    }
+}
+      
+      
+   function highlightActiveCard(gridId, index) {
+    // 1. مسح التلوين من كل البطاقات
+    document.querySelectorAll('.card').forEach(c => {
+        c.classList.remove('active-track', 'playing-state');
+        const indicator = c.querySelector('.playing-indicator');
+        if (indicator) indicator.innerHTML = ''; 
+    });
+
+    // 2. البحث عن البطاقة المشغلة (أذكار أو راديو أو قرآن)
+    const activeCard = document.querySelector(`[data-azkar-idx="${index}"]`) || 
+                       document.querySelector(`[data-radio-idx="${index}"]`) || 
                        document.querySelectorAll(`#${gridId} .card`)[index];
 
     if (activeCard) {
         activeCard.classList.add('active-track');
         if (state.isPlaying) activeCard.classList.add('playing-state');
-        const eq = document.createElement('div'); 
-        eq.className = 'playing-indicator';
-        eq.innerHTML = `<i class="fa-solid fa-play"></i><div class="eq-bars"><div class="playing-bar"></div><div class="playing-bar"></div><div class="playing-bar"></div></div>`;
-        activeCard.appendChild(eq);
+        
+        const indicator = activeCard.querySelector('.playing-indicator');
+        if (indicator) {
+            indicator.innerHTML = `
+                <i class="fa-solid fa-play"></i>
+                <div class="eq-bars">
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                    <div class="playing-bar"></div>
+                </div>`;
+        }
     }
 }
 
@@ -3770,41 +3806,15 @@ function playFavoriteSurah(data) {
       
       
 function initAzkar() {
-    const grid = document.getElementById('azkarGrid');
-    
-    // استخدام البيانات الثابتة مباشرة
+    state.currentView = 'azkar';
     state.hisnData = HISN_DATA_STATIC;
+    
+    // استدعاء دالة الرسم الشاملة فقط
     renderAzkarGridItems(state.hisnData);
-  
-    // مسح محتوى الشبكة وعرض الأذكار
-    grid.innerHTML = '';
     
-    state.hisnData.forEach((item, index) => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-            <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                <i class="fas fa-pray" style="color:var(--text-muted);"></i>
-                <span style="font-size: 0.7rem; color: var(--primary); background: rgba(94, 234, 212, 0.1); padding: 2px 8px; border-radius: 10px;">${item.ID}</span>
-            </div>
-            <h3 style="margin-top:15px; font-size:1rem; min-height: 50px;">${item.TITLE}</h3>
-            <p style="font-size:0.8rem; color:var(--text-muted);">أذكار صوتية</p>
-            
-            <div class="playing-indicator">
-                <i class="fa-solid fa-play"></i>
-                <div class="eq-bars">
-                    <div class="playing-bar"></div>
-                    <div class="playing-bar"></div>
-                    <div class="playing-bar"></div>
-                </div>
-            </div>
-        `;
-
-        card.onclick = () => playAzkarAudio(item, index);
-        grid.appendChild(card);
-    });
+    // التمرير للأعلى
+    document.getElementById('azkarView').scrollTop = 0;
     
-    // تفعيل تأثير التمرير
     if (typeof applyScrollReveal === "function") applyScrollReveal();
 }
       
@@ -3812,32 +3822,31 @@ function initAzkar() {
       
       
       
-    function playAzkarAudio(item, index) {
+   function playAzkarAudio(item, index) {
     activatePlayerUI();
-     state.isRadioMode = false;
+    state.isRadioMode = false;
     state.isAzkarMode = true; 
     state.currentIndex = index;
     state.playlist = HISN_DATA_STATIC;
       
-      document.body.classList.add('azkar-active');
+    document.body.classList.add('azkar-active');
     document.body.classList.remove('radio-active');
 
+    // تحديث بيانات المشغل (البار السفلي)
     document.getElementById('pTitle').textContent = item.TITLE;
     document.getElementById('pArtist').textContent = "حصن المسلم";
     
+    // تفعيل التلوين فوراً
     highlightActiveCard('azkarGrid', index);
     
-    // تصحيح الرابط ليكون https إذا لزم الأمر
+    // إعداد وتشغيل الصوت
     let audioUrl = item.AUDIO_URL.replace('http://', 'https://');
-    
     audio.src = audioUrl;
     audio.play().then(() => {
         state.isPlaying = true;
         updatePlayerUI();
     }).catch(e => {
-        console.error("خطأ في التشغيل:", e);
-        // محاولة التشغيل بالرابط الأصلي إذا فشل الـ https
-        audio.src = item.AUDIO_URL;
+        audio.src = item.AUDIO_URL; // محاولة أخيرة بالرابط الأصلي
         audio.play();
     });
 
