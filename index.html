@@ -1359,7 +1359,7 @@ body.radio-active #currTime {
             });
             
             document.getElementById('pTitle').textContent = data.radioData.name;
-            document.getElementById('pArtist').textContent = "إذاعة";
+            document.getElementById('pArtist').textContent = "";
             document.getElementById('progressBar').style.display = 'none';
             document.getElementById('durTime').style.display = 'none';
             const currTime = document.getElementById('currTime');
@@ -1705,7 +1705,7 @@ function navigate(view) {
     highlightActiveCard('radioGrid', idx);
 
     document.getElementById('pTitle').textContent = radio.name;
-    document.getElementById('pArtist').textContent = "بث مباشر";
+    document.getElementById('pArtist').textContent = " ";
     document.getElementById('progressBar').style.display = 'none';
     document.getElementById('durTime').style.display = 'none';
     
