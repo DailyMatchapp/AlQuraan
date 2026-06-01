@@ -951,6 +951,90 @@ body.azkar-active #playerMushafBtn,
     display: none !important;
 }
       
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      /* تصميم زر تحميل التطبيق في القائمة الجانبية */
+.sidebar-app-download {
+    padding: 15px;
+    margin-top: auto; /* ليدفع الزر إلى أسفل القائمة */
+}
+
+.app-btn-container {
+    background: linear-gradient(135deg, rgba(94, 234, 212, 0.2), rgba(94, 234, 212, 0.05));
+    border: 1px solid var(--primary);
+    border-radius: 15px;
+    padding: 10px;
+    text-align: center;
+    transition: var(--transition);
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(94, 234, 212, 0.1);
+}
+
+.app-btn-container:hover {
+    background: rgba(94, 234, 212, 0.25);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px var(--primary-glow);
+}
+
+.app-btn-container i {
+    font-size: 1.8rem;
+    color: var(--primary);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.app-btn-container span {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+.app-btn-container small {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* تصميم أيقونات التحميل داخل النافذة المنبثقة */
+.download-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.download-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255,255,255,0.05);
+    padding: 12px 20px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: white;
+    border: 1px solid var(--border);
+    transition: 0.3s;
+}
+
+.download-link:hover {
+    border-color: var(--primary);
+    background: rgba(94, 234, 212, 0.1);
+}
+
+.download-link i {
+    font-size: 1.5rem;
+    color: var(--primary);
+}
     </style> 
 </head>
 <body>
@@ -985,6 +1069,20 @@ body.azkar-active #playerMushafBtn,
          <div class="nav-item" onclick="navigate('asma')">
     <i class="fas fa-star-and-crescent"></i> أسماء الله الحسنى
 </div>
+
+
+
+
+<!-- رابط تحميل التطبيق المباشر -->
+<a href="https://www.mediafire.com/file/95q73wmjca6gt9h/QuranMp3.apk/file" target="_blank" class="sidebar-app-download" style="text-decoration: none;">
+    <div class="app-btn-container">
+        <i class="fas fa-mobile-screen-button"></i>
+        <span>تحميل التطبيق</span>
+        <small>متوفر الآن للأندرويد Apk</small>
+    </div>
+</a>
+
+
         </nav>
         
         <div class="sidebar-footer">
@@ -1272,6 +1370,21 @@ body.azkar-active #playerMushafBtn,
             <div id="book"></div>
         </div>
     </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <script>
     document.getElementById("current-year").textContent = new Date().getFullYear();
@@ -4051,6 +4164,19 @@ window.addEventListener('online', () => {
         wasPlayingBeforeDisconnect = false;
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
     </script>
 </body>
 </html>
